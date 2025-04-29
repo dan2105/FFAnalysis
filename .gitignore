@@ -1,5 +1,9 @@
 # Ignore generated files
-build/*
+build*/*
 metadata/*
-install/*
+install*/*
 .asetup.save
+.vscode/*
+
+# Ignore output files
+output*/*

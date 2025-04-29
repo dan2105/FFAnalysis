@@ -1,0 +1,80 @@
+general:
+  debug_level: INFO # DEBUG, INFO, WARNING, ERROR
+  input_filelist_path: "../metadata/filelist.txt"
+  input_sumweights_path: "../metadata/sum_of_weights.txt"
+  output_path_histograms: "../output_histograms/"
+  output_path_ntuples: "../output_ntuples/"
+  default_sumweights: "NOSYS"
+  default_event_weights: "weight_mc_NOSYS * weight_pileup_NOSYS * globalTriggerEffSF_NOSYS * weight_leptonSF_tight_NOSYS * weight_jvt_effSF_NOSYS  * weight_ftag_effSF_GN2v01_Continuous_NOSYS"
+  default_reco_tree_name: "reco"
+  xsection_files:
+    - files: ["/cvmfs/atlas.cern.ch/repo/sw/database/GroupData/dev/PMGTools/PMGxsecDB_mc23.txt"]
+      campaigns: ["mc23a", "mc23d", "mc23e"]
+  luminosity:
+    mc23a: 29049.3 # update?
+    mc23d: 27239.9 # update?
+  #custom_frame_name: "ttZBoostedFrame"
+  #automatic_systematics: True
+  nominal_only: True
+  #create_tlorentz_vectors_for: ["jet", "el", "mu"]
+  #config_define_after_custom_class : True
+  define_custom_columns:
+    - name: nMuons_NOSYS
+      definition: mu_pt_NOSYS[mu_pt_NOSYS >= 7000 && mu_select_tight_NOSYS==true].size()
+  number_of_cpus: 4
+  use_region_subfolders: True
+
+
+regions:
+  - name: "all_events"
+    selection: "nMuons_NOSYS >= 0"
+    variables: &common_variables
+      - name: "n_muons"
+        type: unsigned long
+        title : "Number of Muons ; nMuons ; Events"
+        definition: nMuons_NOSYS
+        binning:
+          min: 0
+          max: 8
+          number_of_bins: 8
+
+  - name: "4mu"
+    selection: "nMuons_NOSYS == 4"
+    variables: *common_variables
+  
+  
+samples:
+  - name: "data"
+    dsids: [0]
+    campaigns: ["2022"]
+    simulation_type: "data"
+
+  - name: "ttll"
+    dsids: [522028, 522032] #522024
+    campaigns: ["mc23a"]
+    simulation_type: "fullsim"
+
+  - name: "ttZqq"
+    dsids: [522036]
+    campaigns: ["mc23a"]
+    simulation_type: "fullsim"
+
+  - name: "ttZnunu"
+    dsids: [522040]
+    campaigns: ["mc23a"]
+    simulation_type: "fullsim"
+
+  - name: "tWZ"
+    dsids: [525955]
+    campaigns: ["mc23a"]
+    simulation_type: "fullsim"
+
+  - name: "ZZ4ljj"
+    dsids: [701000]
+    campaigns: ["mc23a"]
+    simulation_type: "fullsim"
+
+  - name: "ZZ4l"
+    dsids: [701040]
+    campaigns: ["mc23a"]
+    simulation_type: "fullsim"
