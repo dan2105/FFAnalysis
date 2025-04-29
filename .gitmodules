@@ -1,0 +1,6 @@
+[submodule "fastframes"]
+	path = fastframes
+	url = https://gitlab.cern.ch/atlas-amglab/fastframes.git
+[submodule "FastFramesCustomClassTemplate"]
+	path = FastFramesCustomClassTemplate
+	url = https://gitlab.cern.ch/atlas-amglab/FastFramesCustomClassTemplate.git
