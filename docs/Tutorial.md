@@ -30,6 +30,12 @@ int main() {
 ```
 </div>
 
+- Exercises will be highlighted in yellow:
+
+<div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise</h4>
+</div>
+
 - Finally, links to more detailed content will be in blue and notes will be in purple.
 
 <div style="background-color: #e6f3ff; border: 1px solid #2196f3; padding: 15px; border-radius: 5px; margin: 10px 0;">
@@ -273,10 +279,257 @@ A comprehensive list of options that can be used to steer FastFrames can be foun
 
 ### 1.2 Changing the configuration file:
 
+One can use the configuration file to add new variables without having to write C++ code. However, we will see that for more complicated analyses writing code provides greater flexibility. This is explained in `Sec. 2.0`.
+
 #### 1.2.1 Adding more regions, defining new variables and adding more histograms:
+
+To add a new variable one can use the `define_custom_columns` option:
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZconfig.yaml
+
+general:
+  define_custom_columns: # You can define new variables here. Use valid C++ syntax.
+      - name: nMuons_NOSYS # Count the number of muons with a pT > 7 GeV and which pass the tight selection.
+        definition: mu_pt_NOSYS[mu_pt_NOSYS >= 7000 && mu_select_tight_NOSYS==true].size()
+```
+</div>
+
+One can then proceed to add a histogram for this variable in one of the existing regions:
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZconfig.yaml
+
+regions: # All the regions (defined by a selection criteria) to be used in the analysis.
+  - name: all_loose_muon # This postfix will be appended to every variable.
+    selection: "ROOT::VecOps::Sum(mu_select_loose_NOSYS) == mu_select_loose_NOSYS.size()" # Selection string, needs to be valid C++ syntax.
+    variables: &common_variables # Here you list the variables. Note the usage of the anchor (&). This allows you to reuse the same variables in other regions.
+      - name: mu_pt # Name of the variable. This will result in 'mu_pt_all_loose_muon'.
+        title: "Muon p_{T} [GeV]; p_{T} [GeV]; Events"
+        definition: mu_pt_NOSYS
+        binning:
+          min: 0
+          max: 200000
+          number_of_bins: 100
+      - name: "n_muons" # New variable here!
+        type: unsigned long
+        title : "Number of Muons ; nMuons ; Events"
+        definition: nMuons_NOSYS
+        binning:
+          min: 0
+          max: 8
+          number_of_bins: 8
+```
+</div>
+
+Additionally, one can add a new region using this variable (notice how we use anchor expressions to re-use variables):
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZconfig.yaml
+
+regions: # All the regions (defined by a selection criteria) to be used in the analysis.
+  - name: 4mu
+    selection: "nMuons_NOSYS == 4"
+    variables: *common_variables # Reuse the common variables defined above.
+```
+</div>
+
+<div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 1</h4>
+
+Add two variables: the number of tight electrons and the number of jets passing the `jet_select_baselineJvt_NOSYS` selection.
+Add two more regions: a four-electron region and a two-muon + two-electron region. Re-use the same variables.
+</div>
+
+<details>
+<summary>Solution...</summary>
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZconfig.yaml
+
+general:
+  define_custom_columns:
+    - name: nMuons_NOSYS
+      definition: mu_pt_NOSYS[mu_pt_NOSYS >= 7000 && mu_select_tight_NOSYS==true].size()
+    - name: nElectrons_NOSYS
+      definition: el_pt_NOSYS[el_pt_NOSYS >= 7000 && el_select_tight_NOSYS==true].size()
+    - name: nJets_NOSYS
+      definition: jet_pt_NOSYS[jet_pt_NOSYS >= 25000 && jet_select_baselineJvt_NOSYS].size()
+
+regions: # All the regions (defined by a selection criteria) to be used in the analysis.
+  - name: all_loose_muon # This postfix will be appended to every variable.
+    selection: "ROOT::VecOps::Sum(mu_select_loose_NOSYS) == mu_select_loose_NOSYS.size()" # Selection string, needs to be valid C++ syntax.
+    variables: &common_variables # Here you list the variables. Note the usage of the anchor (&). This allows you to reuse the same variables in other regions.
+      - name: mu_pt # Name of the variable. This will result in 'mu_pt_all_loose_muon'.
+        title: "Muon p_{T} [GeV]; p_{T} [GeV]; Events"
+        definition: mu_pt_NOSYS
+        binning:
+          min: 0
+          max: 200000
+          number_of_bins: 100
+      - name: "n_muons"
+        type: unsigned long
+        title : "Number of Muons ; nMuons ; Events"
+        definition: nMuons_NOSYS
+        binning:
+          min: 0
+          max: 8
+          number_of_bins: 8
+      - name: "n_electrons"
+        type: unsigned long
+        title : "Number of Electrons ; nElectrons ; Events"
+        definition: nElectrons_NOSYS
+        binning:
+          min: 0
+          max: 8
+          number_of_bins: 8
+      - name: "n_jets"
+        type: unsigned long
+        title : "Number of Jets ; nJets ; Events"
+        definition: nJets_NOSYS
+        binning:
+          min: 0
+          max: 8
+          number_of_bins: 8
+  
+  - name: all_tight_muon # Another region with a different selection.
+    selection: "ROOT::VecOps::Sum(mu_select_tight_NOSYS) == mu_select_tight_NOSYS.size()"
+    variables: *common_variables # Reuse the common variables defined above.
+
+  - name: 4mu
+    selection: "nMuons_NOSYS == 4"
+    variables: *common_variables # Reuse the common variables defined above.
+
+  - name: 4e
+    selection: "nElectrons_NOSYS == 4"
+    variables: *common_variables
+
+  - name: 2e2mu
+    selection: "nElectrons_NOSYS == 2 && nMuons_NOSYS == 2"
+    variables: *common_variables
+
+```
+</div>
+
+
+</details>
 
 #### 1.2.2 Producing ntuples (for example to use as input for ML training):
 
+FastFrames allows you to produce ntuples instead of histograms by specifying the `--step` option as `n` when running the framework. This is useful for creating datasets that can be used for machine learning, further slimming your ntuples or augmenting them.
+
+To produce ntuples, ensure that the `output_path_ntuples` is correctly defined in the `general` block of your configuration file:
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZconfig.yaml
+
+general:
+  output_path_ntuples: "../output_ntuples/" # Path to the output ntuples relative to fastframes directory
+```
+</div>
+
+Then, run the framework with the following command:
+
+<div style="background-color:rgb(255, 220, 220); padding: 15px; border-radius: 6px; border-left: 4px solid rgb(165, 19, 11);">
+<strong style="color:rgb(195, 46, 12);"></strong>
+
+```bash
+# Produce ntuples
+python3 python/FastFrames.py -c ../ttZconfig.yaml --step n --samples ttZnunu
+```
+</div>
+
+This will create ntuple root files in the directory specified by `output_path_ntuples`. The file will contain what is specified in the `ntuples` block:
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZconfig.yaml
+
+ntuples: # Use this block to define the ntuples to be created.
+  regions: # Only events passing the selection of one of the regions will be saved in the ntuple.
+    - 4mu
+    - 4e
+    - 2e2mu
+  #selection: "nJets_NOSYS == 3" # You can alternatively define a selection for the ntuples.
+  branches: # These branches will be saved in the ntuple.
+    - .*_pt_NOSYS # You can use regular expressions. This will select e, mu and jet pt.
+    - jet_eta
+    - jet_phi
+    - mu_eta
+    - mu_phi
+    - el_eta
+    - el_phi
+```
+</div>
+
+<div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 2</h4>
+
+Store the pT of electrons, muons and jets in GeV.
+</div>
+
+<details>
+<summary>Solution...</summary>
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZconfig.yaml
+
+general:
+    - name: mu_pt_gev_NOSYS
+      definition: mu_pt_NOSYS/1000.0 # Convert to GeV.
+    - name: el_pt_gev_NOSYS
+      definition: el_pt_NOSYS/1000.0
+    - name: jet_pt_gev_NOSYS
+      definition: jet_pt_NOSYS/1000.0
+
+ntuples: # Use this block to define the ntuples to be created.
+  regions: # Only events passing the selection of one of the regions will be saved in the ntuple.
+    - 4mu
+    - 4e
+    - 2e2mu
+  #selection: "nJets_NOSYS == 3" # You can alternatively define a selection for the ntuples.
+  branches: # These branches will be saved in the ntuple.
+    #- .*_pt_NOSYS # You can use regular expressions. This will select e, mu and jet pt.
+    - jet_eta
+    - jet_phi
+    - mu_eta
+    - mu_phi
+    - el_eta
+    - el_phi
+    - .*_pt_gev_NOSYS # This will select e, mu and jet pt in GeV.
+
+```
+</div>
+
+
+</details>
+
+
+<div style="background-color: #e6f3ff; border: 1px solid #2196f3; padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color: #0d47a1; margin-top: 0;">More details...</h4>
+
+For additional information on how to configure and use ntuples, refer to the [FastFrames documentation](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/config/#ntuples-block-settings).
+</div>
 
 ## 2.0 Using a custom FastFrames class:
 
@@ -301,5 +554,6 @@ You can find more information about the following topics in these links:
 - [FastFrames documentation](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/).
 - [TopCPToolkit documentation](https://topcptoolkit.docs.cern.ch).
 - [FastFrames source code](https://gitlab.cern.ch/atlas-amglab/fastframes/).
+- [FastFrames main tutorial](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/tutorial/).
 
 </div>
