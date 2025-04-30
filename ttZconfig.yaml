@@ -31,8 +31,11 @@ general:
       definition: el_pt_NOSYS/1000.0
     - name: jet_pt_gev_NOSYS
       definition: jet_pt_NOSYS/1000.0
+  create_tlorentz_vectors_for: ["jet", "el", "mu"] # Create TLorentzVectors for the specified objects.
+  use_rvec: True # Use ROOT::RVec instead of std::vector.
   number_of_cpus: 4 # CPU cores to use for the analysis.
   use_region_subfolders: True # Save the histograms in subfolders per region.
+  custom_frame_name: "MyCustomFrame" # Name of the custom class.
 
 
 regions: # All the regions (defined by a selection criteria) to be used in the analysis.
@@ -76,15 +79,24 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
     variables: *common_variables # Reuse the common variables defined above.
 
   - name: 4mu
-    selection: "nMuons_NOSYS == 4"
-    variables: *common_variables # Reuse the common variables defined above.
+    selection: region_name_NOSYS == std::string("4mu")
+    variables: 
+      - *common_variables # Reuse the common variables defined above.
+      - name: n_muons
+        type: unsigned long
+        title : "Number of Muons ; nMuons ; Events"
+        definition: n_muons_NOSYS
+        binning:
+          min: 0
+          max: 8
+          number_of_bins: 8
 
   - name: 4e
-    selection: "nElectrons_NOSYS == 4"
+    selection: region_name_NOSYS == std::string("4e")
     variables: *common_variables
 
   - name: 2e2mu
-    selection: "nElectrons_NOSYS == 2 && nMuons_NOSYS == 2"
+    selection: region_name_NOSYS == std::string("2e2mu")
     variables: *common_variables
   
 ntuples: # Use this block to define the ntuples to be created.

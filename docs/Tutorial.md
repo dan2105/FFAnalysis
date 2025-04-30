@@ -80,7 +80,7 @@ Let's now compile and install FastFrames:
 ```bash
 # Configure, compile, install
 cmake -S fastframes -B build_ff -DCMAKE_INSTALL_PREFIX=install_ff
-cmake --build build_ff -j10 --target install
+cmake --build build_ff -j4 --target install
 
 # Setup environment
 source build_ff/setup.sh
@@ -533,7 +533,34 @@ For additional information on how to configure and use ntuples, refer to the [Fa
 
 ## 2.0 Using a custom FastFrames class:
 
+
+
 ### 2.1 Install and configure:
+
+<div style="background-color:rgb(255, 220, 220); padding: 15px; border-radius: 6px; border-left: 4px solid rgb(165, 19, 11);">
+<strong style="color:rgb(195, 46, 12);"></strong>
+
+```bash
+# Configure, compile, install
+cmake -S FastFramesCustomClassTemplate -B build_custom -DCMAKE_PREFIX_PATH=$PWD/install_ff -DCMAKE_INSTALL_PREFIX=install_custom
+cmake --build build_custom -j4 --target install
+
+# Setup environment
+source build_custom/setup.sh
+
+```
+</div>
+
+<div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
+
+Once FF and the custom class are compiled and installed you only need to re-load your environment.
+```bash
+setupATLAS --quiet && lsetup git && asetup StatAnalysis,0.5.3
+source build_ff/setup.sh
+source build_custom/setup.sh
+```
+</div>
 
 ### 2.2 Add new variables
 
