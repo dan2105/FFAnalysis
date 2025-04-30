@@ -1,58 +1,74 @@
 general:
-  debug_level: INFO # DEBUG, INFO, WARNING, ERROR
-  input_filelist_path: "../metadata/filelist.txt"
-  input_sumweights_path: "../metadata/sum_of_weights.txt"
-  output_path_histograms: "../output_histograms/"
-  output_path_ntuples: "../output_ntuples/"
-  default_sumweights: "NOSYS"
+  debug_level: INFO # Logger level
+  input_filelist_path: "../metadata/filelist.txt" # Path to the metadata relative to fastframes directory
+  input_sumweights_path: "../metadata/sum_of_weights.txt" # Path to the metadata relative to fastframes directory
+  output_path_histograms: "../output_histograms/" # Path to the output histograms relative to fastframes directory
+  output_path_ntuples: "../output_ntuples/" # Path to the output ntuples relative to fastframes directory
+  default_sumweights: "NOSYS" # Default sum of weights for the samples. This is used to calculate the scaling to the luminosity.
   default_event_weights: "weight_mc_NOSYS * weight_pileup_NOSYS * globalTriggerEffSF_NOSYS * weight_leptonSF_tight_NOSYS * weight_jvt_effSF_NOSYS  * weight_ftag_effSF_GN2v01_Continuous_NOSYS"
-  default_reco_tree_name: "reco"
-  xsection_files:
+  default_reco_tree_name: "reco" # Name of the reco tree in the input files.
+  xsection_files: # Location of the cross-section, k-factor, filter-efficiency medatada split per campaign.
     - files: ["/cvmfs/atlas.cern.ch/repo/sw/database/GroupData/dev/PMGTools/PMGxsecDB_mc23.txt"]
       campaigns: ["mc23a", "mc23d", "mc23e"]
-  luminosity:
+  luminosity: # Luminosity for the campaigns
     mc23a: 29049.3 # update?
     mc23d: 27239.9 # update?
   #custom_frame_name: "ttZBoostedFrame"
-  #automatic_systematics: True
-  nominal_only: True
+  automatic_systematics: True
+  nominal_only: False # Run with/without systematics.
   #create_tlorentz_vectors_for: ["jet", "el", "mu"]
   #config_define_after_custom_class : True
-  define_custom_columns:
+  define_custom_columns: # You can define new variables here. Use valid C++ syntax.
     - name: nMuons_NOSYS
       definition: mu_pt_NOSYS[mu_pt_NOSYS >= 7000 && mu_select_tight_NOSYS==true].size()
-  number_of_cpus: 4
-  use_region_subfolders: True
+    - name: nJets_NOSYS
+      definition: jet_pt_NOSYS[jet_pt_NOSYS >= 25000 && jet_select_baselineJvt_NOSYS].size()
+  number_of_cpus: 4 # CPU cores to use for the analysis.
+  use_region_subfolders: True # Save the histograms in subfolders per region.
 
 
-regions:
-  - name: "all_events"
-    selection: "nMuons_NOSYS >= 0"
-    variables: &common_variables
-      - name: "n_muons"
-        type: unsigned long
-        title : "Number of Muons ; nMuons ; Events"
-        definition: nMuons_NOSYS
+regions: # All the regions (defined by a selection criteria) to be used in the analysis.
+  - name: all_loose_muon # This postfix will be appended to every variable.
+    selection: "ROOT::VecOps::Sum(mu_select_loose_NOSYS) == mu_select_loose_NOSYS.size()" # Selection string, needs to be valid C++ syntax.
+    variables: &common_variables # Here you list the variables. Note the usage of the anchor (&). This allows you to reuse the same variables in other regions.
+      - name: mu_pt # Name of the variable. This will result in 'mu_pt_all_loose_muon'.
+        title: "Muon p_{T} [GeV]; p_{T} [GeV]; Events"
+        definition: mu_pt_NOSYS
         binning:
           min: 0
-          max: 8
-          number_of_bins: 8
-
-  - name: "4mu"
-    selection: "nMuons_NOSYS == 4"
-    variables: *common_variables
+          max: 200000
+          number_of_bins: 100
+      #- name: "n_muons"
+      #  type: unsigned long
+      #  title : "Number of Muons ; nMuons ; Events"
+      #  definition: nMuons_NOSYS
+      #  binning:
+      #    min: 0
+      #    max: 8
+      #    number_of_bins: 8
+      #- name: "n_jets"
+      #  type: unsigned long
+      #  title : "Number of Jets ; nJets ; Events"
+      #  definition: nJets_NOSYS
+      #  binning:
+      #    min: 0
+      #    max: 8
+      #    number_of_bins: 8
   
+  - name: all_tight_muon # Another region with a different selection.
+    selection: "ROOT::VecOps::Sum(mu_select_tight_NOSYS) == mu_select_tight_NOSYS.size()"
+    variables: *common_variables # Reuse the common variables defined above.
   
-samples:
-  - name: "data"
-    dsids: [0]
-    campaigns: ["2022"]
-    simulation_type: "data"
+samples: # All the samples to be used in the analysis.
+  - name: "data" # Name given to the sample.
+    dsids: [0] # For data, this is always 0.
+    campaigns: ["2022"] # The corresponding campaing or campaigns.
+    simulation_type: "data" # Type of simulation.
 
-  - name: "ttll"
-    dsids: [522028, 522032] #522024
-    campaigns: ["mc23a"]
-    simulation_type: "fullsim"
+  - name: "ttll" # Another sample.
+    dsids: [522028, 522032] # List of DSIDs for the sample.
+    campaigns: ["mc23a"] 
+    simulation_type: "fullsim" # For MC samples we have a different simulation type.
 
   - name: "ttZqq"
     dsids: [522036]
