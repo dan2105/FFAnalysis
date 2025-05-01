@@ -62,8 +62,9 @@ Setup the environment and download the code:
 
 ```bash
 # Clone the tutorial repository Create a directory to store your work
-git clone ssh://git@gitlab.cern.ch:7999/dbaronmo/fftutorialtopws2025.git FFTutorial --recurse-submodules
+git clone --branch PLEASEMODIFYME ssh://git@gitlab.cern.ch:7999/dbaronmo/fftutorialtopws2025.git FFTutorial --recurse-submodules
 cd FFTutorial
+
 
 # Setup environment
 setupATLAS --quiet && lsetup git && asetup StatAnalysis,0.5.3
@@ -533,9 +534,66 @@ For additional information on how to configure and use ntuples, refer to the [Fa
 
 ## 2.0 Using a custom FastFrames class:
 
+<div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note: only if you completed the previous sections.</h4>
 
+This is the starting point for the workshop tutotorial. If you have followed the previous sections, you need to clean the previous exercises. To do this:
+
+```bash
+# Take all files to the initial state. Run from FFTutorial/ level.
+git restore .
+
+# Checkout the starting point for the live tutorial.
+git checkout PLEASEMODIFYME
+```
+
+Once you do this, you can skip and go to `Section 2.1.3`.
+</div>
 
 ### 2.1 Install and configure:
+
+First, we need to download the tutorial code, install `FastFrames` and install the custom class.
+
+#### 2.1.1 Download tutorial code:
+
+<div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
+
+We assume that you are running this tutorial inside an `lxplus` machine, located at `/eos/user/<your_username_first_letter>/<your_username>`.
+</div>
+
+<div style="background-color:rgb(255, 220, 220); padding: 15px; border-radius: 6px; border-left: 4px solid rgb(165, 19, 11);">
+<strong style="color:rgb(195, 46, 12);"></strong>
+
+```bash
+# Clone the tutorial repository Create a directory to store your work
+git clone --branch PLEASEMODIFYME ssh://git@gitlab.cern.ch:7999/dbaronmo/fftutorialtopws2025.git FFTutorial --recurse-submodules
+cd FFTutorial
+
+# Setup environment
+setupATLAS --quiet && lsetup git && asetup StatAnalysis,0.5.3
+```
+</div>
+
+#### 2.1.2 Install FastFrames:
+
+Let's compile and install FastFrames:
+
+<div style="background-color:rgb(255, 220, 220); padding: 15px; border-radius: 6px; border-left: 4px solid rgb(165, 19, 11);">
+<strong style="color:rgb(195, 46, 12);"></strong>
+
+```bash
+# Configure, compile, install
+cmake -S fastframes -B build_ff -DCMAKE_INSTALL_PREFIX=install_ff
+cmake --build build_ff -j4 --target install
+
+# Setup environment
+source build_ff/setup.sh
+
+```
+</div>
+
+#### 2.1.3 Install the custom class:
 
 <div style="background-color:rgb(255, 220, 220); padding: 15px; border-radius: 6px; border-left: 4px solid rgb(165, 19, 11);">
 <strong style="color:rgb(195, 46, 12);"></strong>
@@ -564,8 +622,150 @@ source build_custom/setup.sh
 
 ### 2.2 Add new variables:
 
-Show how to do object multiplicity. 
-- Exercie, put shown things + nMu/Ele.
+The main point of a custom class is to be able to make object manipulations thorugh C++ code. This gives more flexibiliy to the analyser. For example in `Section 1.2.1` we learnt how to count the number of muons with a pT >= 7 GeV and that pass the tight selection. However, to do the same for electrons and jets we have to write the same expressions again. 
+
+FastFrames can be extended with a "custom class" where we can write a single function and re-use it. The custom class [skeleton source code](https://gitlab.cern.ch/atlas-amglab/FastFramesCustomClassTemplate/-/blob/main/MyCustomFrame/MyCustomFrame.h?ref_type=heads) has methods that allow us to define variables for histograming, ntupling and only for the truth variables.
+
+The basic structure of the custom class code is:
+- FastFramesCustomClassTemplate/
+  - MyCustomFrame/ ------------ This is the name of the class.
+    - MyCustomFrame.h ----- Header file where the class declarations live.
+  - ROOT/ ------------------------ Directory containing the class implementation.
+    - MyCustomFrame.cc ---- This is where the variable definitions go! 
+
+First, to use the custom class we need to add the `custom_frame_name` option to the general block.
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZconfig.yaml
+
+general:
+  custom_frame_name: "MyCustomFrame" # Name of the custom class.
+```
+</div>
+
+<div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
+
+The name of the custom class can be changed using the provided `renameFiles.sh`. 
+DO NOT do this for the tutorial!
+</div>
+
+Now, we can add the number of jets passing some selections via the custom code. To add a custom variable that is **Systematics dependent** we use the `MainFrame::systematicDefine` method. We need to pass:
+- The `mainNode` parameter,
+- the variable name (it needs to be postfixed by `_NOSYS`),
+- the function that will define the variable,
+- and the columns that the previous function uses as parameters.
+
+For the number of jets case, the following code needs to be added to the `ROOT::RDF::RNode MyCustomFrame::defineVariables` method in `MyCustomFrame.cc`:
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```cpp
+// MyCustomFrame.cc
+
+// Jets 
+// Lambda function to define the number of jets above 25 GeV.
+auto numberOfJets25 = [](const ROOT::VecOps::RVec<float>& ptV,
+  const ROOT::VecOps::RVec<char>& selection) {
+    return DefineHelpers::numberOfObjects(ptV, 25000, selection);
+};
+
+LOG(INFO) << "Adding variable: n_jets_NOSYS" << std::endl;
+mainNode = MainFrame::systematicDefine(mainNode,
+                                        "n_jets_NOSYS",
+                                        numberOfJets25,
+                                        {"jet_pt_NOSYS", "jet_select_baselineJvt_NOSYS"});
+```
+</div>
+
+<div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
+
+Notice how we made use of the helper function to count the number of objects that FastFrames already provides in `DefineHelpers.h`. For more information please red the [documentation here](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/helpers/).
+</div>
+
+<div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
+
+If our variable is **not systematic dependent** we can instead of using
+```
+mainNode = MainFrame::systematicDefine(mainNode, ...)
+```
+use 
+```
+mainNode = mainNode.Define(..)
+```
+see the [documentation here](https://root.cern/doc/v628/classROOT_1_1RDF_1_1RInterface.html#a4698601205a55ac49279150d56fc904f).
+</div>
+
+Now, one can add a region in the `config.yaml` file, use this variable for a selection and plot it.
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZconfig.yaml
+
+regions:
+  - name: 2jp
+      selection: "n_jets_NOSYS >= 2"
+      variables: &2j_variables # This allows you to reuse the same variables in other regions.
+        - name: n_jet
+          type: unsigned long
+          title : "Number of Jets ; nJets ; Events"
+          definition: n_jets_NOSYS
+          binning:
+            min: 0
+            max: 8
+            number_of_bins: 8
+```
+</div>
+
+<div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 3</h4>
+
+- Make the previously described changes.
+- Add a function to count the number of tight muons/electrons with pT >= 7 GeV.
+- Add the corresponding variables using the previous function.
+</div>
+
+<details>
+<summary>Solution...</summary>
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```cpp
+// MyCustomFrame.cc
+
+// Muons
+  // Lambda function to define the number of leptons above 7 GeV.
+  auto numberOfLeptons7 = [](const ROOT::VecOps::RVec<float>& ptV,
+    const ROOT::VecOps::RVec<char>& selection) {
+      return DefineHelpers::numberOfObjects(ptV, 7000, selection);
+  };
+
+  LOG(INFO) << "Adding variable: n_muons_NOSYS" << std::endl;
+  mainNode = MainFrame::systematicDefine(mainNode,
+                                         "n_muons_NOSYS",
+                                         numberOfLeptons7,
+                                         {"mu_pt_NOSYS", "mu_select_tight_NOSYS"});
+
+  // Electrons
+  LOG(INFO) << "Adding variable: n_electrons_NOSYS" << std::endl;
+  mainNode = MainFrame::systematicDefine(mainNode,
+                                         "n_electrons_NOSYS",
+                                         numberOfLeptons7,
+                                         {"el_pt_NOSYS", "el_select_tight_NOSYS"});
+```
+</div>
+
+</details>
+
 
 Show pT sorted objects.
 - Exercise, put show things in + add b-tagged jets vector.
@@ -577,17 +777,17 @@ Show custom options and custom histogram.
 
 ### 2.3 Per-sample decisions:
 
-Show how to define a variable just for signal (ttll) sample.
+Show how to define a variable (TLV for the b/bar jets) just for signal (ttll) sample.
 - Excersie, put shown things in.
 
 ### 2.4 Matching `reco` and `truth` trees:
 
-Explain how to do reco-truth matching.
+Explain how to do reco-truth matching. Match reco jet to b/bar truth jet.
 - Exercise, match b-jets from ttbar.
 
 ## 3.0 Machine learning:
 
-
+Show Michal model.
 
 ## 4.0 Using distributed computing:
 

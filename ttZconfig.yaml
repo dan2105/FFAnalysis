@@ -82,9 +82,22 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
     selection: "ROOT::VecOps::Sum(mu_select_tight_NOSYS) == mu_select_tight_NOSYS.size()"
     variables: *common_variables # Reuse the common variables defined above.
 
+  - name: 2jp
+    selection: "n_jets_NOSYS >= 2"
+    variables: &2j_variables # This allows you to reuse the same variables in other regions.
+      - name: n_jet
+        type: unsigned long
+        title : "Number of Jets ; nJets ; Events"
+        definition: n_jets_NOSYS
+        binning:
+          min: 0
+          max: 8
+          number_of_bins: 8
+
   - name: 4mu
     selection: region_name_NOSYS == std::string("4mu")
-    variables: &custom_class_variables # This allows you to reuse the same variables in other regions.
+    variables: &custom_class_variables
+      - *2j_variables # Reuse the common variables defined above.
       - name: n_mu
         type: unsigned long
         title : "Number of Muons ; nMuons ; Events"
@@ -97,14 +110,6 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
         type: unsigned long
         title : "Number of Electrons ; nElectrons ; Events"
         definition: n_electrons_NOSYS
-        binning:
-          min: 0
-          max: 8
-          number_of_bins: 8
-      - name: n_jet
-        type: unsigned long
-        title : "Number of Jets ; nJets ; Events"
-        definition: n_jets_NOSYS
         binning:
           min: 0
           max: 8
@@ -138,17 +143,33 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
     selection: region_name_NOSYS == std::string("4mu") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
     variables: &1b_varibles
       - *custom_class_variables # Reuse the common variables defined above.
+      - name: bjet0_pt
+        title : "B-jet 0 p_{T} [GeV]; p_{T} [GeV]; Events"
+        definition: "sorted_bjet_TLV_NOSYS.at(0).Pt()"
+        type: double
+        binning:
+          min: 0
+          max: 200000
+          number_of_bins: 100
 
-  - name: 4mu2b+
+  - name: 4mu2bp
     selection: region_name_NOSYS == std::string("4mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
     variables: &2b_varibles
-      - *custom_class_variables
+      - *1b_varibles
+      - name: bjet1_pt
+        title : "B-jet 1 p_{T} [GeV]; p_{T} [GeV]; Events"
+        definition: "sorted_bjet_TLV_NOSYS.at(1).Pt()"
+        type: double
+        binning:
+          min: 0
+          max: 200000
+          number_of_bins: 100
 
   - name: 4e1b
     selection: region_name_NOSYS == std::string("4e") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
     variables: *1b_varibles
   
-  - name: 4e2b+
+  - name: 4e2bp
     selection: region_name_NOSYS == std::string("4e") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
     variables: *2b_varibles
 
@@ -156,7 +177,7 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
     selection: region_name_NOSYS == std::string("2e2mu") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
     variables: *1b_varibles
 
-  - name: 2e2mu2b+
+  - name: 2e2mu2bp
     selection: region_name_NOSYS == std::string("2e2mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
     variables: *2b_varibles
 
@@ -164,7 +185,7 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
     selection: region_name_NOSYS == std::string("mu3e") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
     variables: *1b_varibles
 
-  - name: mu3e2b+
+  - name: mu3e2bp
     selection: region_name_NOSYS == std::string("mu3e") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
     variables: *2b_varibles
 
@@ -172,9 +193,10 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
     selection: region_name_NOSYS == std::string("e3mu") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
     variables: *1b_varibles
 
-  - name: e3mu2b+
+  - name: e3mu2bp
     selection: region_name_NOSYS == std::string("e3mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
     variables: *2b_varibles
+      
   
 ntuples: # Use this block to define the ntuples to be created.
   regions: # Only events passing the selection of one of the regions will be saved in the ntuple.
