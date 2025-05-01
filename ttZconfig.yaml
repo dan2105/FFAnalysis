@@ -36,6 +36,10 @@ general:
   number_of_cpus: 4 # CPU cores to use for the analysis.
   use_region_subfolders: True # Save the histograms in subfolders per region.
   custom_frame_name: "MyCustomFrame" # Name of the custom class.
+  custom_options: # Use this to pass custom options to the custom class.
+    metadata_histogram_name: metadata_ttZ
+    run_tag: ttZ-v1
+    runner: Diego
 
 
 regions: # All the regions (defined by a selection criteria) to be used in the analysis.
@@ -80,9 +84,8 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
 
   - name: 4mu
     selection: region_name_NOSYS == std::string("4mu")
-    variables: 
-      - *common_variables # Reuse the common variables defined above.
-      - name: n_muons
+    variables: &custom_class_variables # This allows you to reuse the same variables in other regions.
+      - name: n_mu
         type: unsigned long
         title : "Number of Muons ; nMuons ; Events"
         definition: n_muons_NOSYS
@@ -90,14 +93,88 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
           min: 0
           max: 8
           number_of_bins: 8
+      - name: n_el
+        type: unsigned long
+        title : "Number of Electrons ; nElectrons ; Events"
+        definition: n_electrons_NOSYS
+        binning:
+          min: 0
+          max: 8
+          number_of_bins: 8
+      - name: n_jet
+        type: unsigned long
+        title : "Number of Jets ; nJets ; Events"
+        definition: n_jets_NOSYS
+        binning:
+          min: 0
+          max: 8
+          number_of_bins: 8
+      - name: n_bjet
+        type: unsigned long
+        title : "Number of b-jets ; nBJets ; Events"
+        definition: n_bjets_NOSYS
+        binning:
+          min: 0
+          max: 8
+          number_of_bins: 8
 
   - name: 4e
     selection: region_name_NOSYS == std::string("4e")
-    variables: *common_variables
+    variables: *custom_class_variables
 
   - name: 2e2mu
     selection: region_name_NOSYS == std::string("2e2mu")
-    variables: *common_variables
+    variables: *custom_class_variables
+
+  - name: mu3e
+    selection: region_name_NOSYS == std::string("mu3e")
+    variables: *custom_class_variables
+  
+  - name: e3mu
+    selection: region_name_NOSYS == std::string("e3mu")
+    variables: *custom_class_variables # Reuse the common variables defined above.
+      
+  - name: 4mu1b
+    selection: region_name_NOSYS == std::string("4mu") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: &1b_varibles
+      - *custom_class_variables # Reuse the common variables defined above.
+
+  - name: 4mu2b+
+    selection: region_name_NOSYS == std::string("4mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
+    variables: &2b_varibles
+      - *custom_class_variables
+
+  - name: 4e1b
+    selection: region_name_NOSYS == std::string("4e") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: *1b_varibles
+  
+  - name: 4e2b+
+    selection: region_name_NOSYS == std::string("4e") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
+    variables: *2b_varibles
+
+  - name: 2e2mu1b
+    selection: region_name_NOSYS == std::string("2e2mu") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: *1b_varibles
+
+  - name: 2e2mu2b+
+    selection: region_name_NOSYS == std::string("2e2mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
+    variables: *2b_varibles
+
+  - name: mu3e1b
+    selection: region_name_NOSYS == std::string("mu3e") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: *1b_varibles
+
+  - name: mu3e2b+
+    selection: region_name_NOSYS == std::string("mu3e") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
+    variables: *2b_varibles
+
+  - name: e3mu1b
+    selection: region_name_NOSYS == std::string("e3mu") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: *1b_varibles
+
+  - name: e3mu2b+
+    selection: region_name_NOSYS == std::string("e3mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
+    variables: *2b_varibles
   
 ntuples: # Use this block to define the ntuples to be created.
   regions: # Only events passing the selection of one of the regions will be saved in the ntuple.
@@ -122,7 +199,7 @@ samples: # All the samples to be used in the analysis.
     simulation_type: "data" # Type of simulation.
 
   - name: "ttll" # Another sample.
-    dsids: [522028, 522032] # List of DSIDs for the sample.
+    dsids: [522024, 522028, 522032] # List of DSIDs for the sample.
     campaigns: ["mc23a"] 
     simulation_type: "fullsim" # For MC samples we have a different simulation type.
 
@@ -148,10 +225,5 @@ samples: # All the samples to be used in the analysis.
 
   - name: "ZZ4l"
     dsids: [701040]
-    campaigns: ["mc23a"]
-    simulation_type: "fullsim"
-
-  - name: "example"
-    dsids: [522024]
     campaigns: ["mc23a"]
     simulation_type: "fullsim"

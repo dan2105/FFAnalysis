@@ -562,15 +562,37 @@ source build_custom/setup.sh
 ```
 </div>
 
-### 2.2 Add new variables
+### 2.2 Add new variables:
+
+Show how to do object multiplicity. 
+- Exercie, put shown things + nMu/Ele.
+
+Show pT sorted objects.
+- Exercise, put show things in + add b-tagged jets vector.
+
+Show ttZ selections.
+- Exercies, put shown things in + add variables to regions and b-jet regions.
+
+Show custom options and custom histogram.
 
 ### 2.3 Per-sample decisions:
 
+Show how to define a variable just for signal (ttll) sample.
+- Excersie, put shown things in.
+
 ### 2.4 Matching `reco` and `truth` trees:
+
+Explain how to do reco-truth matching.
+- Exercise, match b-jets from ttbar.
 
 ## 3.0 Machine learning:
 
+
+
 ## 4.0 Using distributed computing:
+
+Show how to configure a condor run.
+- Exercise, give some job specifications and ask for the command.
 
 
 <div style="background-color: #e6f3ff; border: 1px solid #2196f3; padding: 15px; border-radius: 5px; margin: 10px 0;">
