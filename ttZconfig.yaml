@@ -16,8 +16,7 @@ general:
   #custom_frame_name: "ttZBoostedFrame"
   automatic_systematics: False
   nominal_only: True # Run with/without systematics.
-  #create_tlorentz_vectors_for: ["jet", "el", "mu"]
-  #config_define_after_custom_class : True
+  config_define_after_custom_class : True
   define_custom_columns: # You can define new variables here. Use valid C++ syntax.
     - name: nMuons_NOSYS
       definition: mu_pt_NOSYS[mu_pt_NOSYS >= 7000 && mu_select_tight_NOSYS==true].size()
@@ -31,6 +30,10 @@ general:
       definition: el_pt_NOSYS/1000.0
     - name: jet_pt_gev_NOSYS
       definition: jet_pt_NOSYS/1000.0
+    - name: n_muons_float_NOSYS
+      definition: static_cast<float>(n_muons_NOSYS)
+    - name: n_electrons_float_NOSYS
+      definition: static_cast<float>(n_electrons_NOSYS)
   create_tlorentz_vectors_for: ["jet", "el", "mu"] # Create TLorentzVectors for the specified objects.
   use_rvec: True # Use ROOT::RVec instead of std::vector.
   number_of_cpus: 4 # CPU cores to use for the analysis.
@@ -151,6 +154,46 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
           min: 0
           max: 200000
           number_of_bins: 100
+      - name: truth_b_pt
+        title : "Truth B-jet p_{T} [GeV]; p_{T} [GeV]; Events"
+        definition: "truth_b_TLV_NOSYS.Pt()"
+        type: double
+        binning:
+          min: 0
+          max: 200000
+          number_of_bins: 100
+      - name: truth_bbar_pt
+        title : "Truth Bbar-jet p_{T} [GeV]; p_{T} [GeV]; Events"
+        definition: "truth_bbar_TLV_NOSYS.Pt()"
+        type: double
+        binning:
+          min: 0
+          max: 200000
+          number_of_bins: 100
+      - name: reco_index_truth_b
+        title : "Reco index of truth B-jet; Reco index; Events"
+        definition: "index_matched_b_NOSYS"
+        type: int
+        binning:
+          min: -1
+          max: 3
+          number_of_bins: 4
+      - name: ttbar_mass
+        title : "ttbar mass [GeV]; m_{tt} [GeV]; Events"
+        definition: "ttbar_mass_NOSYS"
+        type: float
+        binning:
+          min: 0
+          max: 500000
+          number_of_bins: 100
+      - name: ttz_score
+        title : "ttZ score; ttZ score; Events"
+        definition: "ttZ_score_NOSYS"
+        type: float
+        binning:
+          min: 0
+          max: 1
+          number_of_bins: 100
 
   - name: 4mu2bp
     selection: region_name_NOSYS == std::string("4mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
@@ -197,7 +240,18 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
     selection: region_name_NOSYS == std::string("e3mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
     variables: *2b_varibles
       
-  
+simple_onnx_inference:
+  - name: "ttZ_model" # Name of the model.
+    model_paths: [ # Paths to the model files. You can use a list of paths.
+      "../onnxModels/model_even.onnx",
+      "../onnxModels/model_odd.onnx"
+    ]
+    inputs:
+      "input": ["n_muons_float_NOSYS", "n_electrons_float_NOSYS", "ttbar_mass_NOSYS", "met_met_NOSYS"]
+    outputs:
+      "output": ["ttZ_score_NOSYS"]
+
+
 ntuples: # Use this block to define the ntuples to be created.
   regions: # Only events passing the selection of one of the regions will be saved in the ntuple.
     - 4mu
@@ -214,38 +268,70 @@ ntuples: # Use this block to define the ntuples to be created.
     - el_phi
     - .*_pt_gev_NOSYS # This will select e, mu and jet pt in GeV.
 
+
+
+
 samples: # All the samples to be used in the analysis.
   - name: "data" # Name given to the sample.
     dsids: [0] # For data, this is always 0.
     campaigns: ["2022"] # The corresponding campaing or campaigns.
     simulation_type: "data" # Type of simulation.
+    exclude_variables: &truth_excluded
+      - truth_b_pt
+      - truth_bbar_pt
+      - reco_index_truth_b
 
   - name: "ttll" # Another sample.
     dsids: [522024, 522028, 522032] # List of DSIDs for the sample.
     campaigns: ["mc23a"] 
     simulation_type: "fullsim" # For MC samples we have a different simulation type.
+    truth:
+    - name: ttZ_partons
+      truth_tree_name: "truth"
+      event_weight: "weight_mc_NOSYS"
+      pair_reco_and_truth_trees: True
+      variables:
+        - name: truth_b_pt
+          title : "Truth B-jet p_{T} [GeV]; p_{T} [GeV]; Events"
+          definition: "truth_b_TLV_NOSYS.Pt()"
+          type: double
+          binning:
+            min: 0
+            max: 200000
+            number_of_bins: 100
+        - name: truth_bbar_pt
+          title : "Truth Bbar-jet p_{T} [GeV]; p_{T} [GeV]; Events"
+          definition: "truth_b_TLV_NOSYS.Pt()"
+          type: double
+          binning:
+            min: 0
+            max: 200000
+            number_of_bins: 100
 
-  - name: "ttZqq"
-    dsids: [522036]
-    campaigns: ["mc23a"]
-    simulation_type: "fullsim"
+  #- name: "ttZqq"
+  #  dsids: [522036]
+  #  campaigns: ["mc23a"]
+  #  simulation_type: "fullsim"
 
-  - name: "ttZnunu"
-    dsids: [522040]
-    campaigns: ["mc23a"]
-    simulation_type: "fullsim"
+  #- name: "ttZnunu"
+  #  dsids: [522040]
+  #  campaigns: ["mc23a"]
+  #  simulation_type: "fullsim"
 
   - name: "tWZ"
     dsids: [525955]
     campaigns: ["mc23a"]
     simulation_type: "fullsim"
+    exclude_variables: *truth_excluded
 
   - name: "ZZ4ljj"
     dsids: [701000]
     campaigns: ["mc23a"]
     simulation_type: "fullsim"
+    exclude_variables: *truth_excluded
 
   - name: "ZZ4l"
     dsids: [701040]
     campaigns: ["mc23a"]
     simulation_type: "fullsim"
+    exclude_variables: *truth_excluded

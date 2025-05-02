@@ -725,6 +725,17 @@ regions:
 ```
 </div>
 
+We need to re-compile the custom class, this needs to be done everytime we add/change the source code:
+
+<div style="background-color:rgb(255, 220, 220); padding: 15px; border-radius: 6px; border-left: 4px solid rgb(165, 19, 11);">
+<strong style="color:rgb(195, 46, 12);"></strong>
+
+```bash
+# Re-compile the custom class.
+cmake --build build_custom -j4 --target install
+```
+</div>
+
 <div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 3</h4>
 
@@ -766,16 +777,577 @@ regions:
 
 </details>
 
+FastFrames can also assist with the creation of `TLorentzVector` (TLV) containers from the individual particles `pT`, `eta`, `phi`, `e` containers. You just need to add the following line to the general block:
 
-Show pT sorted objects.
-- Exercise, put show things in + add b-tagged jets vector.
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
 
-Show ttZ selections.
-- Exercies, put shown things in + add variables to regions and b-jet regions.
+```yaml
+# ttZconfig.yaml
 
-Show custom options and custom histogram.
+general:
+   create_tlorentz_vectors_for: ["jet", "el", "mu"] # Create TLorentzVectors for the specified objects.
+```
+</div>
 
-### 2.3 Per-sample decisions:
+Once this is done one can create pT-sorted containers using `DefineHelpers::sortedPassedVector`, for jets this would look like:
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```cpp
+// MyCustomFrame.cc
+
+// Specify the type for the pT sorting functions
+using sorted_particle_1sel = ROOT::VecOps::RVec<TLV>(*)(const ROOT::VecOps::RVec<TLV>&,const ROOT::VecOps::RVec<char>&);
+// Jets 
+LOG(INFO) << "Adding variable: sorted_jet_TLV_NOSYS" << std::endl;
+mainNode = MainFrame::systematicDefine(mainNode,
+                                        "sorted_jet_TLV_NOSYS",
+                                        static_cast<sorted_particle_1sel>(DefineHelpers::sortedPassedVector),
+                                        {"jet_TLV_NOSYS", "jet_select_baselineJvt_NOSYS"});
+```
+</div>
+
+<div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 4</h4>
+
+- Make the previously described changes.
+- Add also pT-sorted vectors for muons and electrons.
+- Add a function for pT-sorted b-jets passing the 85% working point.
+</div>
+
+<details>
+<summary>Solution...</summary>
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```cpp
+// MyCustomFrame.cc
+
+// Muons
+LOG(INFO) << "Adding variable: sorted_mu_TLV_NOSYS" << std::endl;
+mainNode = MainFrame::systematicDefine(mainNode,
+                                        "sorted_mu_TLV_NOSYS",
+                                        static_cast<sorted_particle_1sel>(DefineHelpers::sortedPassedVector),
+                                        {"mu_TLV_NOSYS", "mu_select_tight_NOSYS"});
+
+// Electrons
+LOG(INFO) << "Adding variable: sorted_el_TLV_NOSYS" << std::endl;
+mainNode = MainFrame::systematicDefine(mainNode,
+                                        "sorted_el_TLV_NOSYS",
+                                        static_cast<sorted_particle_1sel>(DefineHelpers::sortedPassedVector),
+                                        {"el_TLV_NOSYS", "el_select_tight_NOSYS"});
+
+// b-tagged jets.
+using sorted_particle_2sel = ROOT::VecOps::RVec<TLV>(*)(const ROOT::VecOps::RVec<TLV>&,const ROOT::VecOps::RVec<char>&, const ROOT::VecOps::RVec<char>&);
+LOG(INFO) << "Adding variable: sorted_bjet_TLV_NOSYS" << std::endl;
+mainNode = MainFrame::systematicDefine(mainNode,
+                                        "sorted_bjet_TLV_NOSYS",
+                                        static_cast<sorted_particle_2sel>(DefineHelpers::sortedPassedVector),
+                                        {"jet_TLV_NOSYS", "jet_select_baselineJvt_NOSYS","jet_GN2v01_FixedCutBEff_85_select"});
+
+```
+</div>
+
+</details>
+
+Sometimes the functions that we use to define variables are not simple and they extend for more than a few lines. Writing long lambda functions in `MyCustomFrame.cc` can be confusing. In this part we show how functions can be defined in separated header/source files.
+
+One can create two files: `Variables.h` and `Variables.cc` and include them in the custom class structure like:
+
+- FastFramesCustomClassTemplate/
+  - MyCustomFrame/ ------------ This is the name of the class.
+    - MyCustomFrame.h ----- Header file where the class declarations live.
+    - Variables.h ------- Header file for the function declarations.
+  - ROOT/ ------------------------ Directory containing the class implementation.
+    - MyCustomFrame.cc ---- This is where the variable definitions go!
+    - Variables.cc ------- This is where the function definitions go.
+
+A good template (it already includes an example function) for these files is:
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```cpp
+// Variables.h
+
+# pragma once
+
+#include <string>
+#include <vector>
+#include "ROOT/RVec.hxx"
+#include "Math/Vector4D.h"
+#include <Math/VectorUtil.h>
+
+using TLV = ROOT::Math::PtEtaPhiEVector;
+
+namespace ttZ {
+  /**
+   * @brief Function to get the sum of the charges of the leptons.
+   * @param chargeV Vector of charges of the leptons.
+   * @return float Sum of the charges.
+   */
+  float sumOfCharges( const ROOT::VecOps::RVec<float>& chargeV);
+}
+
+// Variables.cc
+
+#include "MyCustomFrame/Variables.h"
+#include "FastFrames/DefineHelpers.h"
+
+#include <string>
+#include <vector>
+#include "ROOT/RVec.hxx"
+#include <Math/VectorUtil.h>
+
+namespace ttZ {
+  float sumOfCharges( const ROOT::VecOps::RVec<float>& chargeV) { return ROOT::VecOps::Sum(chargeV); }
+}
+```
+</div>
+
+At this point, if one wants to create a variable that holds the charges of leptons that pass a tight selection, have a pT >= 7 GeV and are pT-sorted, once can add:
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```cpp
+// Variables.h
+
+namespace ttZ {
+  /**
+   * @brief Function to get the pt-sorted vector of charges of the leptons that pass a selection.
+   * And have a pT > 7 GeV.
+   * @param chargeV Vector of charges of the leptons.
+   * @param ptV Vector of pT of the leptons.
+   * @param selection Vector of selection flags for the leptons.
+   * @return ROOT::VecOps::RVec<float> Vector of charges of the leptons that pass the selection, sorted by pt.
+   */
+  ROOT::VecOps::RVec<float> sortedPassedChargeVector7(
+      const ROOT::VecOps::RVec<float>& chargeV,
+      const ROOT::VecOps::RVec<float>& ptV,
+      const ROOT::VecOps::RVec<char>& selection);
+}
+
+// Variables.cc
+
+namespace ttZ {
+  ROOT::VecOps::RVec<float> sortedPassedChargeVector7(
+      const ROOT::VecOps::RVec<float>& chargeV,
+      const ROOT::VecOps::RVec<float>& ptV,
+      const ROOT::VecOps::RVec<char>& selection){
+
+      // Create a vector of decisions to test pT > 7 GeV.
+      ROOT::VecOps::RVec<char> gt7 = ptV > 7000;
+
+      // Get the pt-sorted indices of the leptons that pass the selection
+      auto passedIndices = DefineHelpers::sortedPassedIndices(ptV, gt7 ,selection);
+      // Create a vector to hold the sorted charges
+      ROOT::VecOps::RVec<float> sortedCharges;
+
+      // Loop over the passed indices and fill the sorted charges vector
+      for (const auto& index : passedIndices) {
+          sortedCharges.push_back(chargeV[index]);
+      }
+
+      return sortedCharges;
+  }
+
+  // MyCustomFrame.cc
+  // Lepton charges
+  LOG(INFO) << "Adding variable: sorted_mu_charge_NOSYS" << std::endl;
+  mainNode = MainFrame::systematicDefine(mainNode,
+                                         "sorted_mu_charge_NOSYS",
+                                         ttZ::sortedPassedChargeVector7,
+                                         {"mu_charge", "mu_pt_NOSYS", "mu_select_tight_NOSYS"});
+
+  LOG(INFO) << "Adding variable: sorted_el_charge_NOSYS" << std::endl;
+  mainNode = MainFrame::systematicDefine(mainNode,
+                                         "sorted_el_charge_NOSYS",
+                                         ttZ::sortedPassedChargeVector7,
+                                         {"el_charge", "el_pt_NOSYS", "el_select_tight_NOSYS"});
+}
+```
+</div>
+
+Since we added header and source files, we not only need to re-compile our code but also run the `CMake` configuration again. To do this:
+
+<div style="background-color:rgb(255, 220, 220); padding: 15px; border-radius: 6px; border-left: 4px solid rgb(165, 19, 11);">
+<strong style="color:rgb(195, 46, 12);"></strong>
+
+```bash
+# Re-configure and re-compile the custom class after adding header/source files.
+cmake -S FastFramesCustomClassTemplate -B build_custom -DCMAKE_PREFIX_PATH=$PWD/install_ff -DCMAKE_INSTALL_PREFIX=install_custom
+cmake --build build_custom -j4 --target install
+```
+</div>
+
+
+<div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 5</h4>
+
+- Make the previously described changes.
+- Add a function classifies the events into regions, it must return a string:
+  - n_electrons + n_muons = 4,
+  - the sum of the charges must be zero.
+  - the leading lepton must have a pT >= 27 GeV.
+  - Classify in: 4mu, 4e, 2e2mu, mu3e, e3mu, and everything else is 'other'.
+- Add a function for pT-sorted b-jets passing the 85% working point.
+- Add these different regions to the configuration. Add histograms for the number of muons, electrons and b-jets in every region.
+- Split further into regions with one b-tagged jet (1b) and two or more b-jets (2bp). For these regions add the histograms with the pT of the leading and sub-leading b-jets.
+</div>
+
+<details>
+<summary>Solution...</summary>
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```cpp
+// MyCustomFrame.cc
+
+// Define the region name
+LOG(INFO) << "Adding variable: region_name_NOSYS" << std::endl;
+mainNode = MainFrame::systematicDefine(mainNode,
+                                        "region_name_NOSYS",
+                                        ttZ::regionName,
+                                        {"n_muons_NOSYS", "n_electrons_NOSYS",
+                                          "sorted_el_charge_NOSYS", "sorted_mu_charge_NOSYS",
+                                          "sorted_el_TLV_NOSYS", "sorted_mu_TLV_NOSYS"});
+
+// Number of b-jets with pT > 25 GeV
+auto numberOfBJets25 = []( const ROOT::VecOps::RVec<TLV>& tlv){
+    std::size_t nBJets = 0;
+    for (const auto& jet : tlv) {
+        if (jet.Pt() > 25000) nBJets++;
+    }
+    return nBJets;
+};
+
+LOG(INFO) << "Adding variable: n_bjets_NOSYS" << std::endl;
+mainNode = MainFrame::systematicDefine(mainNode,
+                                        "n_bjets_NOSYS",
+                                        numberOfBJets25,
+                                        {"sorted_bjet_TLV_NOSYS"});
+
+// Variables.h
+
+/**
+ * @brief Function to determine the region based on the sum of the charges,
+ * the pT of the leading lepton, and the number of leptons of each type.
+ * @param nMuons Number of muons.
+ * @param nElectrons Number of electrons.
+ * @param elChargeV Vector of charges of the electrons.
+ * @param muChargeV Vector of charges of the muons.
+ * @param elTLV Vector of TLorentzVectors of the electrons.
+ * @param muTLV Vector of TLorentzVectors of the muons.
+ * @return std::string Region name.
+ */
+std::string regionName(
+    std::size_t nMuons,
+    std::size_t nElectrons,
+    const ROOT::VecOps::RVec<float>& elChargeV,
+    const ROOT::VecOps::RVec<float>& muChargeV,
+    const ROOT::VecOps::RVec<TLV>& elTLV,
+    const ROOT::VecOps::RVec<TLV>& muTLV);
+
+// Variables.cc
+
+std::string regionName(
+      std::size_t nMuons,
+      std::size_t nElectrons,
+      const ROOT::VecOps::RVec<float>& elChargeV,
+      const ROOT::VecOps::RVec<float>& muChargeV,
+      const ROOT::VecOps::RVec<TLV>& elTLV,
+      const ROOT::VecOps::RVec<TLV>& muTLV) {
+
+          // Get the sum of the charges of the leptons.
+          float sumOfChargesEl = sumOfCharges(elChargeV);
+          float sumOfChargesMu = sumOfCharges(muChargeV);
+          float sumOfCharges = sumOfChargesEl + sumOfChargesMu;
+
+          // Get the leading lepton pT.
+          float leadingMuonPt = nMuons > 0 ? muTLV.at(0).Pt() : 0.0f;
+          float leadingElectronPt = nElectrons > 0 ? elTLV.at(0).Pt() : 0.0f;
+          float leadingLeptonPt = std::max(leadingMuonPt, leadingElectronPt);
+
+          if (nMuons + nElectrons != 4 || sumOfCharges != 0.0f || leadingLeptonPt < 27000) return "other";
+          if (nMuons == 2 && nElectrons == 2) {
+              // In this case, we need to check that one Z pair can be formed.
+              if (sumOfChargesEl != 0.0f) return "other";
+              return "2e2mu";
+          }
+          if (nMuons == 4) return "4mu";
+          if (nElectrons == 4) return "4e";
+          if (nMuons == 1 && nElectrons == 3) return "mu3e";
+          if (nMuons == 3 && nElectrons == 1) return "e3mu";
+          return "other";
+  }
+
+```
+
+```yaml
+# ttZconfig.yaml
+
+regions:
+  - name: 4mu
+    selection: region_name_NOSYS == std::string("4mu")
+    variables: &custom_class_variables
+      - *2j_variables # Reuse the common variables defined above.
+      - name: n_mu
+        type: unsigned long
+        title : "Number of Muons ; nMuons ; Events"
+        definition: n_muons_NOSYS
+        binning:
+          min: 0
+          max: 8
+          number_of_bins: 8
+      - name: n_el
+        type: unsigned long
+        title : "Number of Electrons ; nElectrons ; Events"
+        definition: n_electrons_NOSYS
+        binning:
+          min: 0
+          max: 8
+          number_of_bins: 8
+      - name: n_bjet
+        type: unsigned long
+        title : "Number of b-jets ; nBJets ; Events"
+        definition: n_bjets_NOSYS
+        binning:
+          min: 0
+          max: 8
+          number_of_bins: 8
+
+  - name: 4e
+    selection: region_name_NOSYS == std::string("4e")
+    variables: *custom_class_variables
+
+  - name: 2e2mu
+    selection: region_name_NOSYS == std::string("2e2mu")
+    variables: *custom_class_variables
+
+  - name: mu3e
+    selection: region_name_NOSYS == std::string("mu3e")
+    variables: *custom_class_variables
+
+  - name: e3mu
+    selection: region_name_NOSYS == std::string("e3mu")
+    variables: *custom_class_variables # Reuse the common variables defined above.
+      
+  - name: 4mu1b
+    selection: region_name_NOSYS == std::string("4mu") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: &1b_varibles
+      - *custom_class_variables # Reuse the common variables defined above.
+      - name: bjet0_pt
+        title : "B-jet 0 p_{T} [GeV]; p_{T} [GeV]; Events"
+        definition: "sorted_bjet_TLV_NOSYS.at(0).Pt()"
+        type: double
+        binning:
+          min: 0
+          max: 200000
+          number_of_bins: 100
+
+  - name: 4mu2bp
+    selection: region_name_NOSYS == std::string("4mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
+    variables: &2b_varibles
+      - *1b_varibles
+      - name: bjet1_pt
+        title : "B-jet 1 p_{T} [GeV]; p_{T} [GeV]; Events"
+        definition: "sorted_bjet_TLV_NOSYS.at(1).Pt()"
+        type: double
+        binning:
+          min: 0
+          max: 200000
+          number_of_bins: 100
+
+  - name: 4e1b
+    selection: region_name_NOSYS == std::string("4e") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: *1b_varibles
+
+  - name: 4e2bp
+    selection: region_name_NOSYS == std::string("4e") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
+    variables: *2b_varibles
+
+  - name: 2e2mu1b
+    selection: region_name_NOSYS == std::string("2e2mu") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: *1b_varibles
+
+  - name: 2e2mu2bp
+    selection: region_name_NOSYS == std::string("2e2mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
+    variables: *2b_varibles
+
+  - name: mu3e1b
+    selection: region_name_NOSYS == std::string("mu3e") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: *1b_varibles
+
+  - name: mu3e2bp
+    selection: region_name_NOSYS == std::string("mu3e") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
+    variables: *2b_varibles
+
+  - name: e3mu1b
+    selection: region_name_NOSYS == std::string("e3mu") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: *1b_varibles
+
+  - name: e3mu2bp
+    selection: region_name_NOSYS == std::string("e3mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
+    variables: *2b_varibles
+
+```
+
+</div>
+
+</details>
+
+The last part of this section will show you how to add a custom histogram to your jobs. This is useful for example to track metadata: such as when was the code ran, who ran the code or attach a tag.
+
+First, we will start defining some custom options that can be later read by our custom class. This is done in the general block, through the `custom_options` parameter:
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZconfig.yaml
+
+general:
+   custom_options: # Use this to pass custom options to the custom class.
+    metadata_histogram_name: metadata_ttZ
+    run_tag: ttZ-v1
+    runner: Diego
+```
+</div>
+
+Now, we need to modify our `MyCustomFrame` class to:
+- Add a new member to the classs to store the metadata (`std::unique_ptr<TH1F> m_metadata_histogram`).
+- Add a new method (`MyCustomFrame::createMetadataHistogram`)to the class to:
+  - read the data from `custom_options`,
+  - create and configure the histogram.
+- Modify `MyCustomFrame::init()` method (this is just called once in our job) to:
+  - configure the histogram by calling `createMetadataHistogram()`,
+  - save the histogram to the output via the FastFrames provided `MainFrame::addCustomHistogramsToOutput` method.
+
+<details>
+<summary>Clike here to see how this would look like...</summary>
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```cpp
+// MyCustomFrame.h
+
+class MyCustomFrame : public MainFrame {
+public:
+
+  explicit MyCustomFrame() = default;
+
+  virtual ~MyCustomFrame() = default;
+
+  virtual void init() override final {MainFrame::init();
+    // Configure the metadata histogram.
+    this->createMetadataHistogram();
+
+    // Save it to the output.
+    // Get the internal histogram from the unique pointer.
+    TH1F& histogram = *m_metadata_histogram;
+    histogram.SetDirectory(0);
+    this->addCustomHistogramsToOutput(histogram);
+  }
+
+  virtual ROOT::RDF::RNode defineVariables(ROOT::RDF::RNode mainNode,
+                                           const std::shared_ptr<Sample>& sample,
+                                           const UniqueSampleID& id) override final;
+  
+  virtual ROOT::RDF::RNode defineVariablesNtuple(ROOT::RDF::RNode mainNode,
+                                                 const std::shared_ptr<Sample>& sample,
+                                                 const UniqueSampleID& id) override final;
+
+  virtual ROOT::RDF::RNode defineVariablesTruth(ROOT::RDF::RNode node,
+                                                const std::string& truth,
+                                                const std::shared_ptr<Sample>& sample,
+                                                const UniqueSampleID& sampleID) override final;
+  
+  virtual ROOT::RDF::RNode defineVariablesNtupleTruth(ROOT::RDF::RNode node,
+                                                      const std::string& treeName,
+                                                      const std::shared_ptr<Sample>& sample,
+                                                      const UniqueSampleID& sampleID) override final;
+
+  void createMetadataHistogram() {
+    // Get the custom options from the configuration.
+    CustomOptions& options = m_config->customOptions();
+
+    // Check if the histogram name is provided in the options.
+    // If not, use a default name.
+    std::string histogramName = "metadata_histogram_default";
+    bool hasHistogramName = options.hasOption("metadata_histogram_name");
+    if (hasHistogramName) {
+      histogramName = options.getOption("metadata_histogram_name");
+    } else {
+      LOG(WARNING) << "No histogram name provided. Using default: " << histogramName << std::endl;
+      LOG(WARNING) << "To provide a name for the histogram use the option: metadata_histogram_name ." << histogramName << std::endl;
+    }
+
+    // Create a map of the options.
+    std::vector<std::pair<std::string,std::string>> settings_vector;
+    for (const auto& key : options.getKeys()){
+      if (key == "metadata_histogram_name") continue;
+      settings_vector.emplace_back(key, options.getOption<std::string>(key));
+    }
+
+    // Create the histogram with the specified name and number of bins.
+    m_metadata_histogram = std::make_unique<TH1F>(histogramName.c_str(), histogramName.c_str(), settings_vector.size(), 0, settings_vector.size());
+    // Get the internal histogram from the unique pointer.
+    TH1F& histogram = *m_metadata_histogram;
+    for (size_t i = 0; i < settings_vector.size(); ++i) {
+        const std::string label = settings_vector[i].first + " || " + settings_vector[i].second;
+        histogram.GetXaxis()->SetBinLabel(i+1, label.c_str());
+    }
+  }
+private:
+  // Add one standalone histogram for metadata tracking.
+  std::unique_ptr<TH1F> m_metadata_histogram;
+
+  ClassDefOverride(MyCustomFrame, 1);
+
+};
+```
+</div>
+
+</details>
+
+<div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 6</h4>
+
+Add the previously shown feature.
+</div>
+
+
+### 2.3 Per-sample decisions and truth variables:
+
+Sometimes you need to define a specific variable just for a given sample. One can do this via the `sample` parameter in the `MyCustomFrame::defineVariables` method. One can also select the `TTree` containing this information. If we want to create a variable from the `truth` TTree we will instead use the `MyCustomFrame::defineVariablesTruth` method.
+
+Let's for instance define the TLVs for the b-jets coming from the t and tbar decays. This information is stored in the `truth` tree under the following variables:
+
+```
+Ttz_MC_b_afterFSR_from_t_eta                    Float_t         Dataset
+Ttz_MC_b_afterFSR_from_t_m                      Float_t         Dataset
+Ttz_MC_b_afterFSR_from_t_pdgId                  Int_t           Dataset
+Ttz_MC_b_afterFSR_from_t_phi                    Float_t         Dataset
+Ttz_MC_b_afterFSR_from_t_pt                     Float_t         Dataset
+Ttz_MC_bbar_afterFSR_from_tbar_eta              Float_t         Dataset
+Ttz_MC_bbar_afterFSR_from_tbar_m                Float_t         Dataset
+Ttz_MC_bbar_afterFSR_from_tbar_pdgId            Int_t           Dataset
+Ttz_MC_bbar_afterFSR_from_tbar_phi              Float_t         Dataset
+Ttz_MC_bbar_afterFSR_from_tbar_pt               Float_t         Dataset
+```
+
+<div style="background-color: #e6f3ff; border: 1px solid #2196f3; padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color: #0d47a1; margin-top: 0;">More details...</h4>
+
+If we wanted even further control (e.g. at the MC campaign or DSID level) we can use the tools explained in the [documentation](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/latest/tutorial/#uniquesample-based-decision-in-the-custom-class).
+</div>
+
 
 Show how to define a variable (TLV for the b/bar jets) just for signal (ttll) sample.
 - Excersie, put shown things in.
@@ -783,9 +1355,15 @@ Show how to define a variable (TLV for the b/bar jets) just for signal (ttll) sa
 ### 2.4 Matching `reco` and `truth` trees:
 
 Explain how to do reco-truth matching. Match reco jet to b/bar truth jet.
-- Exercise, match b-jets from ttbar.
+- Implement the previous changes. 
+- Implement the branch protection?
+
 
 ## 3.0 Machine learning:
+
+Explain the ML inputs...
+
+Show how to add the functions...
 
 Show Michal model.
 
