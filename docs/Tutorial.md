@@ -1603,9 +1603,9 @@ Implement the previously described changes.
 
 Explain the ML inputs...
 
-Show how to add the functions...
+Exercise... define variables to create inputs.
 
-Show Michal model.
+Show Michal model and explain simple ONNX inference via config.
 
 Show alternative way of doing this directly in the code.
 

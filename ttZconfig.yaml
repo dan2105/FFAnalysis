@@ -194,6 +194,30 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
           min: 0
           max: 1
           number_of_bins: 100
+      - name: leading_GN2_quantile
+        title : "Leading GN2 quantile; Leading GN2 quantile; Events"
+        definition: "GN2_quantile_leading_NOSYS"
+        type: float
+        binning:
+          min: 0
+          max: 7
+          number_of_bins: 7
+      - name: subleading_GN2_quantile
+        title : "Subleading GN2 quantile; Subleading GN2 quantile; Events"
+        definition: "GN2_quantile_subleading_NOSYS"
+        type: float
+        binning:
+          min: 0
+          max: 7
+          number_of_bins: 7
+      - name: met_met
+        title : "Missing ET [GeV]; E_{T}^{miss} [GeV]; Events"
+        definition: "met_met_NOSYS"
+        type: float
+        binning:
+          min: 0
+          max: 300000
+          number_of_bins: 150
 
   - name: 4mu2bp
     selection: region_name_NOSYS == std::string("4mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
@@ -239,6 +263,14 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
   - name: e3mu2bp
     selection: region_name_NOSYS == std::string("e3mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
     variables: *2b_varibles
+    
+  - name: 4l1b
+    selection: (region_name_NOSYS != std::string("other") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2)
+    variables: *1b_varibles
+
+  - name: 4l2bp
+    selection: (region_name_NOSYS != std::string("other") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2)
+    variables: *2b_varibles
       
 simple_onnx_inference:
   - name: "ttZ_model" # Name of the model.
@@ -247,7 +279,7 @@ simple_onnx_inference:
       "../onnxModels/model_even.onnx" # eventNumber % 2 == 0 ? model_pos_0 : model_pos_1
     ]
     inputs:
-      "input": ["n_muons_float_NOSYS", "n_electrons_float_NOSYS", "ttbar_mass_NOSYS", "met_met_NOSYS"]
+      "input": ["GN2_quantile_leading_NOSYS", "GN2_quantile_subleading_NOSYS", "ttbar_mass_NOSYS", "met_met_NOSYS"]
     outputs:
       "output": ["ttZ_score_NOSYS"]
 
@@ -307,16 +339,6 @@ samples: # All the samples to be used in the analysis.
             min: 0
             max: 200000
             number_of_bins: 100
-
-  #- name: "ttZqq"
-  #  dsids: [522036]
-  #  campaigns: ["mc23a"]
-  #  simulation_type: "fullsim"
-
-  #- name: "ttZnunu"
-  #  dsids: [522040]
-  #  campaigns: ["mc23a"]
-  #  simulation_type: "fullsim"
 
   - name: "tWZ"
     dsids: [525955]
