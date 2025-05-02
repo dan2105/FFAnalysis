@@ -1322,10 +1322,49 @@ private:
 Add the previously shown feature.
 </div>
 
+### 2.3 `truth` trees and variables:
 
-### 2.3 Per-sample decisions and truth variables:
+When we want to interact with other trees different than `reco`, e.g. truth information stored in the `truth` or `particleLevel` trees, we need to add the `truth:` block for the relevant samples.
 
-Sometimes you need to define a specific variable just for a given sample. One can do this via the `sample` parameter in the `MyCustomFrame::defineVariables` method. One can also select the `TTree` containing this information. If we want to create a variable from the `truth` TTree we will instead use the `MyCustomFrame::defineVariablesTruth` method.
+For example, to add histograms from the `truth` tree to our signal ttZ sample (`ttll`), we need to do:
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZconfig.yaml
+
+samples:
+  - name: "ttll" # Another sample.
+      dsids: [522024, 522028, 522032] # List of DSIDs for the sample.
+      campaigns: ["mc23a"] 
+      simulation_type: "fullsim" # For MC samples we have a different simulation type.
+      truth:
+      - name: ttZ_partons
+        truth_tree_name: "truth" # The name of the tree you want to inspect.
+        event_weight: "weight_mc_NOSYS" 
+        pair_reco_and_truth_trees: True # This allows you to access the truth variables in the reco tree.
+        variables: # Truth variables to be saved for the sample.
+          - name: truth_b_pt
+            title : "Truth B-jet p_{T} [GeV]; p_{T} [GeV]; Events"
+            definition: "truth_b_TLV_NOSYS.Pt()"
+            type: double
+            binning:
+              min: 0
+              max: 200000
+              number_of_bins: 100
+          - name: truth_bbar_pt
+            title : "Truth Bbar-jet p_{T} [GeV]; p_{T} [GeV]; Events"
+            definition: "truth_b_TLV_NOSYS.Pt()"
+            type: double
+            binning:
+              min: 0
+              max: 200000
+              number_of_bins: 100
+```
+</div>
+
+This will add the `truth_b_pt` and `truth_bbar_pt` variables when running only over the the `ttll` sample. However, we first need to define the variables they depend on. These variables should be defined via the `MyCustomFrame::defineVariablesTruth` method. 
 
 Let's for instance define the TLVs for the b-jets coming from the t and tbar decays. This information is stored in the `truth` tree under the following variables:
 
@@ -1342,22 +1381,223 @@ Ttz_MC_bbar_afterFSR_from_tbar_phi              Float_t         Dataset
 Ttz_MC_bbar_afterFSR_from_tbar_pt               Float_t         Dataset
 ```
 
+Since the variables needed to form the TLVs for the truth b/bar particles are **not** systematic-dependent, this is also a good oportunity to use `Define` instead of `systematicDefine`. The code we need to add is:
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```cpp
+// MyCustomFrame.cc
+
+ROOT::RDF::RNode MyCustomFrame::defineVariablesTruth(ROOT::RDF::RNode node,
+                                                     const std::string& /*sample*/,
+                                                     const std::shared_ptr<Sample>& /*sample*/,
+                                                     const UniqueSampleID& /*sampleID*/) {
+  
+  // Define the truth TLorentzVector for the b and bbar quarks                                     
+  LOG(INFO) << "Adding variable: truth_b_TLV" << std::endl;
+  node = node.Define("truth_b_TLV",
+                    ttZ::makeTruthTLV(5),
+                    {"Ttz_MC_b_afterFSR_from_t_pt",
+                    "Ttz_MC_b_afterFSR_from_t_eta",
+                    "Ttz_MC_b_afterFSR_from_t_phi",
+                    "Ttz_MC_b_afterFSR_from_t_m",
+                    "Ttz_MC_b_afterFSR_from_t_pdgId"});
+
+  LOG(INFO) << "Adding variable: truth_bbar_TLV" << std::endl;
+  node = node.Define("truth_bbar_TLV",
+                    ttZ::makeTruthTLV(-5),
+                    {"Ttz_MC_bbar_afterFSR_from_tbar_pt",
+                    "Ttz_MC_bbar_afterFSR_from_tbar_eta",
+                    "Ttz_MC_bbar_afterFSR_from_tbar_phi",
+                    "Ttz_MC_bbar_afterFSR_from_tbar_m",
+                    "Ttz_MC_bbar_afterFSR_from_tbar_pdgId"});
+
+  return node;
+}
+
+// Variables.h
+
+/**
+ * @brief Functor class to create a TLorentzVector for a truth particle that must have a given particle ID.
+ * If the truth particle does not have the given ID, it returns a TLorentzVector with zero values.
+ * @param particleID Particle ID of the truth particle.
+ */
+class makeTruthTLV {
+  using TLV = ROOT::Math::PtEtaPhiMVector;
+  public:
+      makeTruthTLV(int particleID) : m_particleID(particleID) {}
+
+      TLV operator() (float pt,
+                  float eta,
+                  float phi,
+                  float m,
+                  int pdgId) const {
+          // Create a vector to hold the TLorentzVectors
+          TLV tlv(0,0,0,0);
+          
+          // Check if the particle ID matches the given ID
+          if (pdgId != m_particleID) return tlv;
+
+          // If it matches, fill the TLorentzVector with the given values.
+          tlv.SetCoordinates(pt, eta, phi, m);
+          return tlv;
+      }
+
+  private:
+      int m_particleID;
+};
+```
+</div>
+
+<div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
+
+This time instead of using a function to define our variable we used a "Functor class". This is an abstraction that provides a storage (in this case `m_particleID`) and an overloaded `()` operator. This allows for more flexibility since we can "pass" parameters and to make our function more flexible.
+</div>
+
+Finally, since the `truth_b_pt` and `truth_bbar_pt` variables are only valid for our `ttll` sample, we want to exclude them from other samples. This is achieved via the `exclude_variables` option, let's put this under the samples we want to apply the skim:
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZconfig.yaml
+
+# For example we do not want these variables in data.
+samples: # All the samples to be used in the analysis.
+  - name: "data" # Name given to the sample.
+    dsids: [0] # For data, this is always 0.
+    campaigns: ["2022"] # The corresponding campaing or campaigns.
+    simulation_type: "data" # Type of simulation.
+    exclude_variables: &truth_excluded
+      - truth_b_pt
+      - truth_bbar_pt
+```
+</div>
+
+<div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 7</h4>
+
+Implement the previously described changes.
+</div>
+
+### 2.3 Per-sample decisions and matching truth and reco trees:
+
+Sometimes you need to define a specific variable just for a given sample. One can do this via the `sample` parameter in the `MyCustomFrame::defineVariables` method.
+
 <div style="background-color: #e6f3ff; border: 1px solid #2196f3; padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color: #0d47a1; margin-top: 0;">More details...</h4>
 
 If we wanted even further control (e.g. at the MC campaign or DSID level) we can use the tools explained in the [documentation](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/latest/tutorial/#uniquesample-based-decision-in-the-custom-class).
 </div>
 
+For example, let's say that only for the signal sample we want to perform a DeltaR matching between the previously created `truth_b_TLV` and the reco-level b-tagged jets in the `sorted_bjet_TLV_NOSYS` container.
 
-Show how to define a variable (TLV for the b/bar jets) just for signal (ttll) sample.
-- Excersie, put shown things in.
+First, to match the `reco` and `truth` trees (by default this is done via the `[runNumber, eventNumber]` map) we use the `pair_reco_and_truth_trees: True` inside the `truth:` block. Once that is done we can access the truth tree variables inside `MyCustomFrame::defineVariables` method. The code will look like:
 
-### 2.4 Matching `reco` and `truth` trees:
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
 
-Explain how to do reco-truth matching. Match reco jet to b/bar truth jet.
-- Implement the previous changes. 
+```cpp
+// MyCustomFrame.cc
+
+// Inside MyCustomFrame::defineVariables()
+if (sample->name() == "ttll") {
+  // Define the truth TLorentzVector for the b and bbar quarks     
+  // Note that to acces the truth variables you need to use the `truth` prefix.                                
+  LOG(INFO) << "Adding variable: recotruth_b_TLV" << std::endl;
+  mainNode = mainNode.Define("recotruth_b_TLV",
+                            ttZ::makeTruthTLV(5),
+                            {"truth.Ttz_MC_b_afterFSR_from_t_pt", 
+                            "truth.Ttz_MC_b_afterFSR_from_t_eta",
+                            "truth.Ttz_MC_b_afterFSR_from_t_phi",
+                            "truth.Ttz_MC_b_afterFSR_from_t_m",
+                            "truth.Ttz_MC_b_afterFSR_from_t_pdgId"});
+
+  // Match the truth b-jet to one of the reco b-jets.
+  LOG(INFO) << "Adding variable: index_matched_b_NOSYS" << std::endl;
+  mainNode = MainFrame::systematicDefine(mainNode,
+                                          "index_matched_b_NOSYS",
+                                          ttZ::recoIndexTruthBJet,
+                                          {"sorted_bjet_TLV_NOSYS", "recotruth_b_TLV"});
+
+}
+
+// Variables.h
+
+/**
+ * @brief Function to get the index of the reco tagged b-jet that matches the truth b-jet.
+ * Returns -1 if no match is found.
+ * @param recoBJets Vector of TLorentzVectors of the reco b-jets.
+ * @param truthBJet TLorentzVector of the truth b-jet.
+ * @return int Index of the reco b-jet that matches the truth b-jet.
+ */
+int recoIndexTruthBJet(const ROOT::VecOps::RVec<TLV>& recoBJets,
+                    const ROOT::Math::PtEtaPhiMVector& truthBJet);
+
+// Variables.cc
+
+int recoIndexTruthBJet(const ROOT::VecOps::RVec<TLV>& recoBJets,
+    const ROOT::Math::PtEtaPhiMVector& truthBJet) {
+
+    // Check the inputs are not empty
+    if (recoBJets.size() == 0 || truthBJet.Pt() == 0) {
+    return -1;
+    }
+
+    // Initialize the index to -1 (no match)
+    int index = -1;
+    double maxDeltaR = 0.4;
+
+    // Loop over the reco b-jets
+    for (std::size_t i = 0; i < recoBJets.size(); ++i) {
+    // Calculate the deltaR between the reco b-jet and the truth b-jet
+    double deltaR = ROOT::Math::VectorUtil::DeltaR(recoBJets[i], truthBJet);
+    // Check if the deltaR is less than the maximum allowed
+    if (deltaR < maxDeltaR) {
+    index = i;
+    maxDeltaR = deltaR;
+    }
+    }
+
+    return index;
+}
+```
+</div>
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZconfig.yaml
+
+# Add this variable to the 4mu1b region.
+- name: reco_index_truth_b
+  title : "Reco index of truth B-jet; Reco index; Events"
+  definition: "index_matched_b_NOSYS"
+  type: int
+  binning:
+    min: -1
+    max: 3
+    number_of_bins: 4
+
+# The previous variable also needs to be added to the excluded variables from other samples!
+exclude_variables: &truth_excluded
+  - truth_b_pt
+  - truth_bbar_pt
+  - reco_index_truth_b
+```
+</div>
+
+
+<div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 8</h4>
+
+Implement the previously described changes.
+</div>
+
 - Implement the branch protection?
-
 
 ## 3.0 Machine learning:
 
@@ -1366,6 +1606,8 @@ Explain the ML inputs...
 Show how to add the functions...
 
 Show Michal model.
+
+Show alternative way of doing this directly in the code.
 
 ## 4.0 Using distributed computing:
 
@@ -1382,5 +1624,6 @@ You can find more information about the following topics in these links:
 - [TopCPToolkit documentation](https://topcptoolkit.docs.cern.ch).
 - [FastFrames source code](https://gitlab.cern.ch/atlas-amglab/fastframes/).
 - [FastFrames main tutorial](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/tutorial/).
+- [FastFrames mattermost channel](https://mattermost.web.cern.ch/top-analysis/channels/histogramming-tool-rdataframe).
 
 </div>

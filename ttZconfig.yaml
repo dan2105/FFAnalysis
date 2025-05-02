@@ -156,7 +156,7 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
           number_of_bins: 100
       - name: truth_b_pt
         title : "Truth B-jet p_{T} [GeV]; p_{T} [GeV]; Events"
-        definition: "truth_b_TLV_NOSYS.Pt()"
+        definition: "truth_b_TLV.Pt()"
         type: double
         binning:
           min: 0
@@ -164,7 +164,7 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
           number_of_bins: 100
       - name: truth_bbar_pt
         title : "Truth Bbar-jet p_{T} [GeV]; p_{T} [GeV]; Events"
-        definition: "truth_bbar_TLV_NOSYS.Pt()"
+        definition: "truth_bbar_TLV.Pt()"
         type: double
         binning:
           min: 0
@@ -243,8 +243,8 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
 simple_onnx_inference:
   - name: "ttZ_model" # Name of the model.
     model_paths: [ # Paths to the model files. You can use a list of paths.
-      "../onnxModels/model_even.onnx",
-      "../onnxModels/model_odd.onnx"
+      "../onnxModels/model_odd.onnx", # The expression deciding which model to use is:
+      "../onnxModels/model_even.onnx" # eventNumber % 2 == 0 ? model_pos_0 : model_pos_1
     ]
     inputs:
       "input": ["n_muons_float_NOSYS", "n_electrons_float_NOSYS", "ttbar_mass_NOSYS", "met_met_NOSYS"]
@@ -287,13 +287,13 @@ samples: # All the samples to be used in the analysis.
     simulation_type: "fullsim" # For MC samples we have a different simulation type.
     truth:
     - name: ttZ_partons
-      truth_tree_name: "truth"
-      event_weight: "weight_mc_NOSYS"
-      pair_reco_and_truth_trees: True
-      variables:
+      truth_tree_name: "truth" # The name of the tree you want to inspect.
+      event_weight: "weight_mc_NOSYS" 
+      pair_reco_and_truth_trees: True # This allows you to access the truth variables in the reco tree.
+      variables: # Truth variables to be saved for the sample.
         - name: truth_b_pt
           title : "Truth B-jet p_{T} [GeV]; p_{T} [GeV]; Events"
-          definition: "truth_b_TLV_NOSYS.Pt()"
+          definition: "truth_b_TLV.Pt()"
           type: double
           binning:
             min: 0
@@ -301,7 +301,7 @@ samples: # All the samples to be used in the analysis.
             number_of_bins: 100
         - name: truth_bbar_pt
           title : "Truth Bbar-jet p_{T} [GeV]; p_{T} [GeV]; Events"
-          definition: "truth_b_TLV_NOSYS.Pt()"
+          definition: "truth_b_TLV.Pt()"
           type: double
           binning:
             min: 0
