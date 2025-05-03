@@ -1609,7 +1609,7 @@ Show Michal model and explain simple ONNX inference via config.
 
 Show alternative way of doing this directly in the code.
 
-## 4.0 Using distributed computing:
+## 4.0 Using the HTCondor distributed system:
 
 Show how to configure a condor run.
 - Exercise, give some job specifications and ask for the command.
@@ -1625,5 +1625,6 @@ You can find more information about the following topics in these links:
 - [FastFrames source code](https://gitlab.cern.ch/atlas-amglab/fastframes/).
 - [FastFrames main tutorial](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/tutorial/).
 - [FastFrames mattermost channel](https://mattermost.web.cern.ch/top-analysis/channels/histogramming-tool-rdataframe).
+- [HTCondor ATLAS](https://batchdocs.web.cern.ch/tutorial/introduction.html)
 
 </div>
