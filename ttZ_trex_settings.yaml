@@ -1,0 +1,63 @@
+selected_regions: ["4l1b.*","4l2bp.*"]
+
+Job:
+  Label: ttZ
+  CmeLabel: 13.6
+  LumiLabel: 29.0
+
+Fit:
+  FitType: "SPLUSB"
+  FitRegion: "CRSR"
+  POIAsimov: 1
+  FitBlind: "True"
+
+samples:
+    - name: "ttll"
+      Color: 4
+      Title: "t#bar{t}Z"
+      Type: "SIGNAL"
+    - name: "tWZ"
+      Color: 3
+      Title: "tWZ"
+      Type: "BACKGROUND"
+    - name: "ZZ4ljj"
+      Color: 2
+      Title: "ZZ4ljj"
+      Type: "BACKGROUND"
+    - name: "ZZ4l"
+      Color: 46
+      Title: "ZZ4l"
+      Type: "BACKGROUND"
+
+Regions:
+  - name: 4l1b.*
+    Type: "VALIDATION"
+  - name: 4l2bp.*
+    Type: "VALIDATION"
+  - name: 4l1b.*ttz_score_onnx.*
+    Type: "SIGNAL"
+  - name: 4l2bp.*ttz_score_onnx.*
+    Type: "SIGNAL"
+
+Systematics:
+    - name: "Luminosity"
+      Title: "Luminosity"
+      Type: "OVERALL"
+      OverallUp: 0.017
+      OverallDown: -0.017
+      Category: "Instrumental"
+
+NormFactors:
+    - name: "mu_signal"
+      Title: "#mu(signal)"
+      Nominal: 1
+      Min: -100
+      Max: 100
+      Samples: "ttll"
+    
+    - name: "mu_bkg"
+      Title: "#mu(bkg)"
+      Nominal: 1
+      Min: -100
+      Max: 100
+      Samples: "tWZ,ZZ4ljj,ZZ4l"
