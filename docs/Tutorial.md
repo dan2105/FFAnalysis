@@ -1,6 +1,6 @@
 # FastFrames tutorial: ATLAS Top Workshop 2025 CHANGE PLEASEMODIFYME
 
-This tutorial will guide you through the setup of a FastFrames module to analyse the datasets previously produced in the `TopCPToolkit` tutorial.
+This tutorial will guide you through the setup of a `FastFrames` module to analyse the datasets previously produced in the `TopCPToolkit` tutorial.
 
 We will adopt the following conventions:
 
@@ -108,7 +108,7 @@ source build_ff/setup.sh
 
 ## 0.1 Clean the input data and create the metadata
 
-Before doing any analysis, we first need to handle the case where in the `TopCPToolkit` workflow no events passed the selections. In this case, `TopCPToolkit` will produce a file without any trees (this can happen for background samples or real collision data where our signature is not present). To clean our datasets we use the `merge_empty_grid_files` script:
+Before doing any analysis, we first need to handle the cases where in the `TopCPToolkit` workflow no events passed the selections. In those cases, `TopCPToolkit` will produce files without any trees (this can happen for background samples or real collision data where our signature is not present). To clean our datasets we use the `merge_empty_grid_files` script:
 
 <div style="background-color:rgb(255, 220, 220); padding: 15px; border-radius: 6px; border-left: 4px solid rgb(165, 19, 11);">
 <strong style="color:rgb(195, 46, 12);"></strong>
@@ -119,6 +119,12 @@ python3 python/merge_empty_grid_files.py --root_files_folder PLEASEMODIFYME
 
 ```
 </div>
+</div>
+
+<div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
+
+The previous step has already been taken care for you. You are not meant to run it. You will not have permissions to write to the tutorial input files location.
 </div>
 
 FastFrames also needs to read from a database that specifies the type of sample, file locations, sum of weights, etc. The code provides the `produce_metadata_files.py` script for this purpose. Let's use it:
@@ -139,7 +145,7 @@ This creates a directory called `metadata` one level up in the directory hierarc
 
 ## 1.0 Run FastFrames:
 
-To run the framework the application entry point is the python script `FastFrames.py`. One can see the supported options by doing:
+To run the framework the application entry point is the python script `FastFrames.py`. One can look at the supported options by doing:
 
 <div style="background-color:rgb(255, 220, 220); padding: 15px; border-radius: 6px; border-left: 4px solid rgb(165, 19, 11);">
 <strong style="color:rgb(195, 46, 12);"></strong>
@@ -152,7 +158,7 @@ python3 python/FastFrames -h
 </div>
 </div>
 
-The most important variables to define the run are:
+The most important variables that define the run are:
 - `-c` The master configuration file. We will talk about this next.
 - `--step` This option allows you to specify if you want to create histograms or n-tuples.
 -  `--samples` Allows you to run just over certain samples.
@@ -206,7 +212,7 @@ This will create `ttZnunu.root` file under the `output_histograms` directory. If
 
 <img src="image1.png" alt="Architecture" width="600"/>
 
-This structure corresponds to what we specified for `regions` anad `variables` in the `ttZconfig.yaml` file:
+This structure corresponds to what is specified under the `regions` and `variables` blocks in the `ttZconfig.yaml` file:
 
 <div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
 <strong style="color:rgb(1, 142, 32);"></strong>
@@ -247,7 +253,7 @@ general:
 ```
 </div>
 
-you will see this output structure (in addition to the increased run time):
+you will instead see the following output structure (in addition to the increased run time):
 
 <img src="image2.png" alt="Architecture" width="600"/>
 
@@ -347,7 +353,8 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
 <div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 1</h4>
 
-Add two variables: the number of tight electrons and the number of jets passing the `jet_select_baselineJvt_NOSYS` selection.
+Add two variables: the number of tight electrons, and the number of jets passing the `jet_select_baselineJvt_NOSYS` selection.
+
 Add two more regions: a four-electron region and a two-muon + two-electron region. Re-use the same variables.
 </div>
 
@@ -451,7 +458,7 @@ Then, run the framework with the following command:
 
 ```bash
 # Produce ntuples
-python3 python/FastFrames.py -c ../ttZconfig.yaml --step n --samples ttZnunu
+python3 python/FastFrames.py -c ../ttZconfig.yaml --step n --samples ttll
 ```
 </div>
 
@@ -532,7 +539,7 @@ ntuples: # Use this block to define the ntuples to be created.
 For additional information on how to configure and use ntuples, refer to the [FastFrames documentation](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/config/#ntuples-block-settings).
 </div>
 
-## 2.0 Using a custom FastFrames class:
+## 2.0 Using a custom class in FastFrames:
 
 <div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note: only if you completed the previous sections.</h4>
@@ -622,9 +629,9 @@ source build_custom/setup.sh
 
 ### 2.2 Add new variables:
 
-The main point of a custom class is to be able to make object manipulations thorugh C++ code. This gives more flexibiliy to the analyser. For example in `Section 1.2.1` we learnt how to count the number of muons with a pT >= 7 GeV and that pass the tight selection. However, to do the same for electrons and jets we have to write the same expressions again. 
+The main point of a custom class is to be able to make object manipulations thorugh C++ code. This gives more flexibiliy to the analyser. For example in `Section 1.2.1` we learnt how to count the number of muons with a pT >= 7 GeV and that pass the tight selection. However, to do the same for electrons and jets we ended up writing the same expressions again. 
 
-FastFrames can be extended with a "custom class" where we can write a single function and re-use it. The custom class [skeleton source code](https://gitlab.cern.ch/atlas-amglab/FastFramesCustomClassTemplate/-/blob/main/MyCustomFrame/MyCustomFrame.h?ref_type=heads) has methods that allow us to define variables for histograming, ntupling and only for the truth variables.
+FastFrames can be extended with a "custom class" where we can write a single function and re-use it. The custom class [skeleton source code](https://gitlab.cern.ch/atlas-amglab/FastFramesCustomClassTemplate/-/blob/main/MyCustomFrame/MyCustomFrame.h?ref_type=heads) has methods that allow you to define variables for histograming, ntupling and only for the truth variables.
 
 The basic structure of the custom class code is:
 - FastFramesCustomClassTemplate/
@@ -649,8 +656,8 @@ general:
 <div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
 
-The name of the custom class can be changed using the provided `renameFiles.sh`. 
-DO NOT do this for the tutorial!
+The name of the custom class can be changed using the provided `renameFiles.sh` script. 
+**DO NOT** do this for the tutorial!
 </div>
 
 Now, we can add the number of jets passing some selections via the custom code. To add a custom variable that is **Systematics dependent** we use the `MainFrame::systematicDefine` method. We need to pass:
@@ -685,7 +692,7 @@ mainNode = MainFrame::systematicDefine(mainNode,
 <div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
 
-Notice how we made use of the helper function to count the number of objects that FastFrames already provides in `DefineHelpers.h`. For more information please red the [documentation here](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/helpers/).
+Notice how we made use of the helper function to count the number of objects that FastFrames already provides in `DefineHelpers.h`. For more information please read the [documentation here](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/helpers/).
 </div>
 
 <div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
@@ -725,7 +732,7 @@ regions:
 ```
 </div>
 
-We need to re-compile the custom class, this needs to be done everytime we add/change the source code:
+But first, we need to re-compile the custom class, this needs to be done everytime we add/change the source code:
 
 <div style="background-color:rgb(255, 220, 220); padding: 15px; border-radius: 6px; border-left: 4px solid rgb(165, 19, 11);">
 <strong style="color:rgb(195, 46, 12);"></strong>
@@ -790,7 +797,7 @@ general:
 ```
 </div>
 
-Once this is done one can create pT-sorted containers using `DefineHelpers::sortedPassedVector`, for jets this would look like:
+Once this is done, one can create pT-sorted containers using `DefineHelpers::sortedPassedVector`. For jets this would look like:
 
 <div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
 <strong style="color:rgb(1, 142, 32);"></strong>
@@ -989,11 +996,12 @@ cmake --build build_custom -j4 --target install
 <h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 5</h4>
 
 - Make the previously described changes.
-- Add a function classifies the events into regions, it must return a string:
+- Add a function that classifies the events into regions, it must return a string between the following options:
+  4e, 4mu, 2e2mu, mu3e, e3mu, other.
+  The regions must have:
   - n_electrons + n_muons = 4,
   - the sum of the charges must be zero.
   - the leading lepton must have a pT >= 27 GeV.
-  - Classify in: 4mu, 4e, 2e2mu, mu3e, e3mu, and everything else is 'other'.
 - Add a function for pT-sorted b-jets passing the 85% working point.
 - Add these different regions to the configuration. Add histograms for the number of muons, electrons and b-jets in every region.
 - Split further into regions with one b-tagged jet (1b) and two or more b-jets (2bp). For these regions add the histograms with the pT of the leading and sub-leading b-jets.
@@ -1221,7 +1229,7 @@ general:
 
 Now, we need to modify our `MyCustomFrame` class to:
 - Add a new member to the classs to store the metadata (`std::unique_ptr<TH1F> m_metadata_histogram`).
-- Add a new method (`MyCustomFrame::createMetadataHistogram`)to the class to:
+- Add a new method (`MyCustomFrame::createMetadataHistogram`) to the class to:
   - read the data from `custom_options`,
   - create and configure the histogram.
 - Modify `MyCustomFrame::init()` method (this is just called once in our job) to:
@@ -1381,7 +1389,7 @@ Ttz_MC_bbar_afterFSR_from_tbar_phi              Float_t         Dataset
 Ttz_MC_bbar_afterFSR_from_tbar_pt               Float_t         Dataset
 ```
 
-Since the variables needed to form the TLVs for the truth b/bar particles are **not** systematic-dependent, this is also a good oportunity to use `Define` instead of `systematicDefine`. The code we need to add is:
+Since the variables needed to form the TLVs for the truth b/bar particles are **not** systematic-dependent, this is a good oportunity to use `Define` instead of `systematicDefine`. The code we need to add is:
 
 <div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
 <strong style="color:rgb(1, 142, 32);"></strong>
@@ -1453,7 +1461,7 @@ class makeTruthTLV {
 <div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
 
-This time instead of using a function to define our variable we used a "Functor class". This is an abstraction that provides a storage (in this case `m_particleID`) and an overloaded `()` operator. This allows for more flexibility since we can "pass" parameters and to make our function more flexible.
+This time instead of using a function to define our variable we used a "Functor class". This is an abstraction that provides a storage (in this case `m_particleID`) and an overloaded `()` operator. This allows for more flexibility since we can "pass" parameters to the function and this makes it more flexible.
 </div>
 
 Finally, since the `truth_b_pt` and `truth_bbar_pt` variables are only valid for our `ttll` sample, we want to exclude them from other samples. This is achieved via the `exclude_variables` option, let's put this under the samples we want to apply the skim:
@@ -1601,18 +1609,644 @@ Implement the previously described changes.
 
 ## 3.0 Machine learning:
 
-Explain the ML inputs...
+In this part of the tutorial we will explain how machine learning (ML) models can be used in FastFrames. FastFrames offers two options:
 
-Exercise... define variables to create inputs.
+- 1.0 Schedule the ML inference from the `ttZconfig.yaml` file.
+- 2.0 Schedule the inference from the custom class by writting code.
 
-Show Michal model and explain simple ONNX inference via config.
+ Method 1.0 applies for *simple enough* models. What is a simple enough model?
+- Each input layer must accept a 1-D tensor (excluding the batch dimension) of type `float32`.
+- The output layer that the user wants to access must produce a 1-D tensor (excluding the batch dimension) of type `float32`.
 
-Show alternative way of doing this directly in the code.
+In other cases, you have to use method 2.0
 
-## 4.0 Using the HTCondor distributed system:
+For this tutorial we will implement a *simple enough* model. However, we will also show how method 2.0 is implemented for this same model.
 
-Show how to configure a condor run.
-- Exercise, give some job specifications and ask for the command.
+The ML algorithm we will use has been trained to distinguis ttZ (signal) events from other physics processes (background). The inputs for the model are:
+
+- Jet leading GN2v01 quantile score.
+- Jet subleading GN2v01 quantile score.
+- Invariant mass of the lepton pair which is considered to be from ttbar. The opposite sign, same flavor pair with `mll` closest to `mZ` is considered to come from the Z boson, the other two leptons are the ttbar pair.
+- Missing transverse momentum.
+
+The model outputs a score between zero and one. Two models are provided in the `onnxModels/` directory. One model is trained with even `eventNumber` events and the other with odd events.
+
+<div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 9</h4>
+
+Define the input variables and add them to the `4mu1b` region for the variables to be replicated in all the remaining regions.
+</div>
+
+<details>
+<summary>Solution...</summary>
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```cpp
+// MyCustomFrame.cc
+
+// ttbar lepton pair invariant mass
+LOG(INFO) << "Adding variable: ttbar_mass_NOSYS" << std::endl;
+mainNode = MainFrame::systematicDefine(mainNode,
+                                        "ttbar_mass_NOSYS",
+                                        ttZ::ttbarLeptonPairInvariantMass,
+                                        {"region_name_NOSYS", "sorted_mu_TLV_NOSYS", "sorted_el_TLV_NOSYS",
+                                        "sorted_mu_charge_NOSYS", "sorted_el_charge_NOSYS"});
+
+// leading and subleading GN2 quantile scores.
+// Step 1
+// Lambda function to define the pt-sorted indices jets passing a pT >= 25 GeV selection,
+// and the baseline JVT selection.
+auto ptSortedGN2QuantileIndices = [](const ROOT::RVec<float>& pt,
+  const ROOT::RVec<char>& selection1) {
+    // Create a vector of decisions to test pT > 25 GeV.
+    ROOT::RVec<char> gt25 = pt > 25000;
+    // Do the logical AND with the selections
+    auto selection = gt25 && selection1;
+    return DefineHelpers::sortedPassedIndices(pt, selection);
+};
+LOG(INFO) << "Adding variable: ptsorted_jet25_indices_NOSYS" << std::endl;
+mainNode = MainFrame::systematicDefine(mainNode,
+                                        "ptsorted_jet25_indices_NOSYS",
+                                        ptSortedGN2QuantileIndices,
+                                        {"jet_pt_NOSYS", "jet_select_baselineJvt_NOSYS"});
+
+// Step 2
+// Lambda function to extract the GN2 quantile scores of the jets with the previously defined indices.
+auto GN2QuantileScores = [](const ROOT::RVec<int>& GN2Quantile,
+  const ROOT::RVec<std::size_t>& indices) {
+    return ROOT::VecOps::Take(GN2Quantile, indices);
+};
+LOG(INFO) << "Adding variable: GN2_quantile_scores_NOSYS" << std::endl;
+mainNode = MainFrame::systematicDefine(mainNode,
+                                        "GN2_quantile_scores_NOSYS",
+                                        GN2QuantileScores,
+                                        {"jet_GN2v01_Continuous_quantile","ptsorted_jet25_indices_NOSYS"});
+
+// Step 3
+// Leading and subleading GN2 quantile scores
+auto leadingGN2Quantile = [](const ROOT::RVec<int>& GN2QuantileScores) {
+    // Check that the vector is not empty
+    if (GN2QuantileScores.size() < 1) {
+        return 1.0f;
+    }
+    return static_cast<float>(ROOT::VecOps::Max(GN2QuantileScores));
+};
+LOG(INFO) << "Adding variable: GN2_quantile_leading_NOSYS" << std::endl;
+mainNode = MainFrame::systematicDefine(mainNode,
+                                        "GN2_quantile_leading_NOSYS",
+                                        leadingGN2Quantile,
+                                        {"GN2_quantile_scores_NOSYS"});
+
+auto subleadingGN2Quantile = [](const ROOT::RVec<int>& GN2QuantileScores) {
+    // Check that the vector has at least two elements
+    if (GN2QuantileScores.size() < 2) {
+        return 1.0f;
+    }
+    // Sort the scores
+    ROOT::RVec<int> sortedScores = ROOT::VecOps::Sort(GN2QuantileScores);
+
+    // Get the second largest score
+    int subleadingScore = sortedScores.at(sortedScores.size() - 2);
+
+    return static_cast<float>(subleadingScore);
+};
+LOG(INFO) << "Adding variable: GN2_quantile_subleading_NOSYS" << std::endl;
+mainNode = MainFrame::systematicDefine(mainNode,
+                                        "GN2_quantile_subleading_NOSYS",
+                                        subleadingGN2Quantile,
+                                        {"GN2_quantile_scores_NOSYS"});
+
+// Variables.h
+
+/**
+ * @brief Invariant mass of the ttbar lepton pair.
+ * -1 if no pair is found.
+ * @param regionName Name of the region.
+ * @param muonTLV Vector of TLorentzVectors of the muons.
+ * @param electronTLV Vector of TLorentzVectors of the electrons.
+ * @param muonCharge Vector of charges of the muons.
+ * @param electronCharge Vector of charges of the electrons.
+ * @return float Invariant mass of the ttbar lepton pair.
+ */
+float ttbarLeptonPairInvariantMass(
+    const std::string& regionName,
+    const ROOT::VecOps::RVec<TLV>& muonTLV,
+    const ROOT::VecOps::RVec<TLV>& electronTLV,
+    const ROOT::VecOps::RVec<float>& muonCharge,
+    const ROOT::VecOps::RVec<float>& electronCharge);
+
+// Variables.cc
+
+// Returns the indices from a list excluding the two given indices.
+// Example: if the list is {0, 1, 2, 3} and the indices are 1 and 2,
+// the function will return {0, 3}.
+std::vector<int> getOtherIndices(int index1, int index2, std::size_t nLeptons) {
+
+    // Check more than two leptons.
+    if (nLeptons <= 2) {
+        throw std::invalid_argument("There must be at least 3 leptons to get other indices");
+    }
+
+    // If any of the indices are -1, returns a vector of -1s.
+    if (index1 == -1 || index2 == -1) {
+        // Construct a vector with nLpeptons - 2 indices
+        std::vector<int> indices;
+        for (std::size_t i = 0; i < nLeptons-2; ++i) {
+            indices.push_back(-1);
+        }
+        return indices;
+    }
+
+    // Form the vector of indices excluding the two given indices.
+    std::vector<int> indices;
+    for (std::size_t i = 0; i < nLeptons; ++i) {
+        if (static_cast<int>(i) != index1 && static_cast<int>(i) != index2) {
+            indices.push_back(i);
+        }
+    }
+    return indices;
+}
+
+// Function to get the indices of the two leptons with an invariant mass closest to the Z boson mass.
+std::vector<int> getClosestZPair(const ROOT::VecOps::RVec<TLV>& leptonTLV, const ROOT::VecOps::RVec<float>& leptonCharge){
+    
+    // Check that the inputs have the same size.
+    if (leptonTLV.size() != leptonCharge.size()){
+        throw std::invalid_argument("leptonTLV and leptonCharge must have the same size");
+    }
+
+    // Default values in case no pair is found.
+    int Z1 = -1;
+    int Z2 = -1;
+    float mZ = 91000.0f; // Z boson mass in MeV.
+    float minLLmass = 100*mZ; // Initialize to a large value.
+    // Go pair by pair, check that is OS pair and calculate the invariant mass.
+    // If the invariant mass is less than the current minimum, update the minimum and the indices.
+    for (std::size_t i = 0; i < leptonTLV.size(); ++i) {
+        for (std::size_t j = i + 1; j < leptonTLV.size(); ++j) {
+            if (leptonCharge[i] * leptonCharge[j] > 0) continue;
+            float llmass = ROOT::Math::VectorUtil::InvariantMass(leptonTLV[i], leptonTLV[j]);
+            if (llmass < minLLmass) {
+                minLLmass = llmass;
+                Z1 = i;
+                Z2 = j;
+            }
+        }
+    }
+
+    return {Z1, Z2};
+}
+
+// Function that given two indices, returns the invariant mass of the leptons at those indices.
+float getMassPairByIndex(
+    const ROOT::VecOps::RVec<TLV>& leptonTLV,
+    const std::vector<int>& indices) {
+
+        // Check that only two indices are given.
+        if (indices.size() != 2) {
+            throw std::invalid_argument("indices must have size 2");
+        }
+        // Check that the indices are valid.
+        if (indices.at(0) == -1 || indices.at(1) == -1) {
+            return 0.0f;
+        }
+
+        return ROOT::Math::VectorUtil::InvariantMass(leptonTLV[indices[0]], leptonTLV[indices[1]]);
+    }
+
+float ttbarLeptonPairInvariantMass(
+    const std::string& regionName,
+    const ROOT::VecOps::RVec<TLV>& muonTLV,
+    const ROOT::VecOps::RVec<TLV>& electronTLV,
+    const ROOT::VecOps::RVec<float>& muonCharge,
+    const ROOT::VecOps::RVec<float>& electronCharge){
+        
+        // If region is other, return 0.0f
+        if (regionName == "other") return 0.0f;
+
+        // Check each region and calculate the invariant mass.
+        // The workflow goes like this:
+        // 1. Get the closest Z pair of leptons.
+        // 2. Get the indices of the other two leptons.
+        // 3. Get the invariant mass from those two indices.
+        if (regionName == "4mu"){
+            auto closestZPair = getClosestZPair(muonTLV, muonCharge);
+            auto indices = getOtherIndices(closestZPair[0], closestZPair[1], 4);
+            return getMassPairByIndex(muonTLV, indices);
+        }
+        if (regionName == "4e"){
+            auto closestZPair = getClosestZPair(electronTLV, electronCharge);
+            auto indices = getOtherIndices(closestZPair[0], closestZPair[1], 4);
+            return getMassPairByIndex(electronTLV, indices);
+        }
+        if (regionName == "2e2mu"){
+            float mZ = 91000.0f;
+            auto mmMass = getMassPairByIndex(muonTLV, {0, 1});
+            auto eeMass = getMassPairByIndex(electronTLV, {0, 1});
+            bool mumuCloser = std::abs(mmMass - mZ) < std::abs(eeMass - mZ);
+            return mumuCloser ? eeMass : mmMass;
+        }
+        if (regionName == "e3mu"){
+            auto closestZPairMu = getClosestZPair(muonTLV, muonCharge);
+            auto otherLeptonIndex = getOtherIndices(closestZPairMu[0], closestZPairMu[1], 3).at(0);
+            if (otherLeptonIndex == -1) return 0.0f;
+            return ROOT::Math::VectorUtil::InvariantMass(muonTLV[otherLeptonIndex], electronTLV[0]);
+        }
+        if (regionName == "mu3e"){
+            auto closestZPairEl = getClosestZPair(electronTLV, electronCharge);
+            auto otherLeptonIndex = getOtherIndices(closestZPairEl[0], closestZPairEl[1], 3).at(0);
+            if (otherLeptonIndex == -1) return 0.0f;
+            return ROOT::Math::VectorUtil::InvariantMass(electronTLV[otherLeptonIndex], muonTLV[0]);
+        }
+        return 0.0f;
+    }
+
+```
+
+```yaml
+# ttZconfig.yaml
+
+regions:
+  - name: 4mu1b
+    selection: region_name_NOSYS == std::string("4mu") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: &1b_varibles
+      - *custom_class_variables # Reuse the common variables defined above.
+      - name: bjet0_pt
+        title : "B-jet 0 p_{T} [GeV]; p_{T} [GeV]; Events"
+        definition: "sorted_bjet_TLV_NOSYS.at(0).Pt()"
+        type: double
+        binning:
+          min: 0
+          max: 200000
+          number_of_bins: 100
+      - name: truth_b_pt
+        title : "Truth B-jet p_{T} [GeV]; p_{T} [GeV]; Events"
+        definition: "truth_b_TLV.Pt()"
+        type: double
+        binning:
+          min: 0
+          max: 200000
+          number_of_bins: 100
+      - name: truth_bbar_pt
+        title : "Truth Bbar-jet p_{T} [GeV]; p_{T} [GeV]; Events"
+        definition: "truth_bbar_TLV.Pt()"
+        type: double
+        binning:
+          min: 0
+          max: 200000
+          number_of_bins: 100
+      - name: reco_index_truth_b
+        title : "Reco index of truth B-jet; Reco index; Events"
+        definition: "index_matched_b_NOSYS"
+        type: int
+        binning:
+          min: -1
+          max: 3
+          number_of_bins: 4
+      - name: ttbar_mass
+        title : "ttbar mass [GeV]; m_{tt} [GeV]; Events"
+        definition: "ttbar_mass_NOSYS"
+        type: float
+        binning:
+          min: 0
+          max: 500000
+          number_of_bins: 100
+      - name: leading_GN2_quantile
+        title : "Leading GN2 quantile; Leading GN2 quantile; Events"
+        definition: "GN2_quantile_leading_NOSYS"
+        type: float
+        binning:
+          min: 0
+          max: 7
+          number_of_bins: 7
+      - name: subleading_GN2_quantile
+        title : "Subleading GN2 quantile; Subleading GN2 quantile; Events"
+        definition: "GN2_quantile_subleading_NOSYS"
+        type: float
+        binning:
+          min: 0
+          max: 7
+          number_of_bins: 7
+      - name: met_met
+        title : "Missing ET [GeV]; E_{T}^{miss} [GeV]; Events"
+        definition: "met_met_NOSYS"
+        type: float
+        binning:
+          min: 0
+          max: 300000
+          number_of_bins: 150
+```
+
+</div>
+
+</details>
+
+
+With the input variables defined: `GN2_quantile_leading_NOSYS`, `GN2_quantile_subleading_NOSYS`, `ttbar_mass_NOSYS`, `met_met_NOSYS`, we can use the `simple_onnx_inference` block to configure the model inference.
+
+<div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 10</h4>
+
+Look at the FF ONNX documentation [here](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/latest/config/#simple_onnx_inference-block-settings) and write an appropriate `simple_onnx_inference` block. Add the model output variable to the `4mu1b` and the subsequent regions.
+</div>
+
+<details>
+<summary>Solution...</summary>
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZconfig.yaml
+
+simple_onnx_inference:
+  - name: "ttZ_model" # Name of the model.
+    model_paths: [ # Paths to the model files. You can use a list of paths.
+      "../onnxModels/model_odd.onnx", # The expression deciding which model to use is:
+      "../onnxModels/model_even.onnx" # eventNumber % 2 == 0 ? model_pos_0 : model_pos_1
+    ]
+    inputs:
+      "input": ["GN2_quantile_leading_NOSYS", "GN2_quantile_subleading_NOSYS", "ttbar_mass_NOSYS", "met_met_NOSYS"]
+    outputs:
+      "output": ["ttZ_score_NOSYS"]
+
+regions:
+  - name: 4mu1b
+      selection: region_name_NOSYS == std::string("4mu") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+      variables: &1b_varibles
+        - *custom_class_variables # Reuse the common variables defined above.
+        - name: ttz_score
+          title : "ttZ score; ttZ score; Events"
+          definition: "ttZ_score_NOSYS"
+          type: float
+          binning:
+            min: 0
+            max: 1
+            number_of_bins: 100
+```
+
+</div>
+
+</details>
+
+<div style="background-color: #e6f3ff; border: 1px solid #2196f3; padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color: #0d47a1; margin-top: 0;">More details...</h4>
+
+To find the name of the input and output tensors for a given ONNX model, you can use the [Netron app](https://netron.app).
+</div>
+
+
+To finish with this section, we will show how to implement the ONNX model directly in the custom class without having to rely on the `simple_onnx_inference` block. First, we need to add to our custom class an object of type `ONNXWrapper`. The definition for this object can be found in the `FastFrames/ONNXWrapper.h` header file.
+
+We add the object to the custom class and initialise it with our models:
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```cpp
+// MyCustomFrame.h
+
+#include "FastFrames/ONNXWrapper.h"
+
+class MyCustomFrame : public MainFrame {
+public:
+virtual void init() override final {MainFrame::init();
+  // ML inference.
+  m_onnx = std::make_unique<ONNXWrapper>("CustomClass_ttZ_model",std::vector<std::string>{"../onnxModels/model_odd.onnx", "../onnxModels/model_even.onnx"});
+}
+
+private:
+// ML inference.
+std::unique_ptr<ONNXWrapper> m_onnx;
+
+};
+```
+</div>
+
+Next, we need to define a new column that stores the output of running inference with the `m_onnx` object. We do it inside `MyCustomFrame::defineVariables` method.
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```cpp
+// MyCustomFrame.cc
+
+// This function is called for each event in the sample. 
+// It interacts with the ONNXWrapper class to perform inference.
+// We need the input variables as paramerters to the function.
+// We also need the pointer to the ONNXWrapper class.
+auto MLInference = [this](float b1_quantile, float b2_quantile,
+                          float ttbar_mass, float met, unsigned long long eventNumber) {
+
+  // Prepare the inputs.
+  ONNXWrapper::Inference infer = m_onnx->createInferenceInstance();
+  std::vector<float> X = {b1_quantile, b2_quantile, ttbar_mass, met};
+  std::vector<int64_t> shape = {1, static_cast<int64_t>(X.size())};
+  infer.addInputs(X, shape);
+
+  // Use the eventNumber % nModels to select the model to use for inference.
+  unsigned int fold = m_onnx->getSessionIndex(eventNumber);
+
+  // Run the inference.
+  m_onnx->evaluate(infer, fold);
+
+  // Extract the outputs.
+  float* output = infer.getOutputs<float>("output");
+
+  return *output;
+};
+
+LOG(INFO) << "Adding variable: ML_output_NOSYS" << std::endl;
+mainNode = MainFrame::systematicDefine(mainNode,
+                                        "ML_output_NOSYS",
+                                        MLInference,
+                                        {"GN2_quantile_leading_NOSYS", "GN2_quantile_subleading_NOSYS",
+                                        "ttbar_mass_NOSYS", "met_met_NOSYS", "eventNumber"});
+```
+</div>
+
+Notice how pass the `this` pointer to the function in order to have access to the `m_onnx` object. Additionally, we need to pass the `eventNumber` column since this will be used to define which model to apply to a certain event - this is done by checking the expression: `eventNumber % 2 = 0`.
+
+Finally, we need to add the `ML_output_NOSYS` variable to one of our regions:
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZconfig.yaml
+
+regions:
+  - name: 4mu1b
+    selection: region_name_NOSYS == std::string("4mu") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: &1b_varibles
+      - *custom_class_variables # Reuse the common variables defined above.
+      - name: ttz_score_onnx
+        title : "ttZ score (ONNX); ttZ score (ONNX); Events"
+        definition: "ML_output_NOSYS"
+        type: float
+        binning:
+          min: 0
+          max: 1
+          number_of_bins: 100
+```
+</div>
+
+<div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 11</h4>
+
+Implement the previously shown changes. 
+</div>
+
+## 4.0 How to produce a TRExFitter configuration for plotting:
+
+FastFrames can help with the creation of [TRExFitter](https://trexfitter-docs.web.cern.ch/trexfitter-docs/latest/) configurations. These files can be used to perform a fit or just plot our histograms. In this part of the tutorial we will show how to do the latter.
+
+To create a configuration that can be run from `TRExFitter` we use the `produce_trexfitter_config.py` script. In this tutorial we will use the following parameters for the script:
+- `-c` FastFrames configuration file.
+- `-o` Output path and name for the generated configuration file.
+- `--trex_settings` Path and name of an auxiliary configuration file where more TRExFitter-related options are defined.
+
+The command that generates the `TRExFitter` configuration is:
+
+<div style="background-color:rgb(255, 220, 220); padding: 15px; border-radius: 6px; border-left: 4px solid rgb(165, 19, 11);">
+<strong style="color:rgb(195, 46, 12);"></strong>
+
+```bash
+# Generate TRExFitter config. Run from fastframes/
+python3 python/produce_trexfitter_config.py -c ../ttZconfig.yaml -o ../my_trex.config --trex_settings ../ttZ_trex_settings.yaml 
+```
+</div>
+
+<div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
+
+The `produce_trexfitter_config.py` script does not support the `use_region_subfolders` option. You have to re-run the histogram production with the latter option set to `False` to be able to use the `TRExFitter` configuration generation.
+</div>
+
+
+
+Let's see how the `ttZ_trex_settings.yaml` configuration file looks like:
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZ_trex_settings.yaml
+
+selected_regions: ["TREx4l.*n_mu.*",
+                  "TREx4l.*n_el.*",
+                  "TREx4l.*n_jet.*",
+                  "TREx4l.*n_bjet.*",
+                  "TREx4l.*bjet0_pt.*",
+                  "TREx4l.*bjet1_pt.*",
+                  "TREx4l.*leading_GN2_quantile.*",
+                  "TREx4l.*subleading_GN2_score.*",
+                  "TREx4l.*met_met.*",
+                  "TREx4l.*ttbar_mass.*",
+                  "TREx4l.*ttz_score_onnx.*"] # This allows to filter which regions + variable pairs are used.
+
+Job: # This corresponds to TREx settings.
+  Label: ttZ
+  CmeLabel: 13.6
+  LumiLabel: 29.0
+
+Fit: # This corresponds to TREx settings.
+  FitType: "SPLUSB"
+  FitRegion: "CRSR"
+  POIAsimov: 1
+  FitBlind: "True"
+
+samples: # Sample settings. They need to match the ones defined in ttZconfig.yaml
+    - name: "data"
+      Color: 1
+      Title: "Data"
+      Type: "DATA"
+    - name: "ttll"
+      Color: 4 # You can define the sample colour, title and type.
+      Title: "t#bar{t}Z"
+      Type: "SIGNAL"
+    - name: "tWZ"
+      Color: 3
+      Title: "tWZ"
+      Type: "BACKGROUND"
+    - name: "ZZ4ljj"
+      Color: 2
+      Title: "ZZ4ljj"
+      Type: "BACKGROUND"
+    - name: "ZZ4l"
+      Color: 46
+      Title: "ZZ4l"
+      Type: "BACKGROUND"
+
+Regions: # This block helps to overwrite options in specifc regions.
+  - name: TREx4l.*
+    Type: "VALIDATION" # For example this,
+  - name: TREx4l.*ttz_score_onnx.*
+    Type: "SIGNAL"
+    Rebin: 10 # or this.
+  - name: TREx4l.*bjet0_pt.*
+    Type: "VALIDATION"
+    Rebin: 10
+  - name: TREx4l.*bjet1_pt.*
+    Type: "VALIDATION"
+    Rebin: 10
+  - name: TREx4l.*met_met.*
+    Type: "VALIDATION"
+    Rebin: 12
+  - name: TREx4l.*ttbar_mass.*
+    Type: "VALIDATION"
+    Rebin: 20
+
+Systematics:
+    - name: "Luminosity"
+      Title: "Luminosity"
+      Type: "OVERALL"
+      OverallUp: 0.017
+      OverallDown: -0.017
+      Category: "Instrumental"
+
+NormFactors: # We can attach normalisation factors to the samples.
+    - name: "mu_signal"
+      Title: "#mu(signal)"
+      Nominal: 1
+      Min: -100
+      Max: 100
+      Samples: "ttll"
+    
+    - name: "mu_bkg"
+      Title: "#mu(bkg)"
+      Nominal: 1
+      Min: -100
+      Max: 100
+      Samples: "tWZ,ZZ4ljj,ZZ4l"
+```
+
+</div>
+
+After the `produce_trexfitter_config.py` script is run, one will obtain a `my_trex.config` file which one can use to generate some plots. Let's create a separate folder (`Plots`) at the `FFTutorial` level to produce the plots:
+
+<div style="background-color:rgb(255, 220, 220); padding: 15px; border-radius: 6px; border-left: 4px solid rgb(165, 19, 11);">
+<strong style="color:rgb(195, 46, 12);"></strong>
+
+```bash
+# Create Plots directory
+mkdir Plots && cd Plots
+
+# Run TRExFitter
+trex-fitter -hwd ../my_trex.config  
+```
+</div>
+
+Now, you can inspect the `Plots/Plots/` directory and have a look at the produced histograms. For example the `TREx4l2bp_n_mu.pdf` plot looks like:
+
+<img src="image3.png" alt="Architecture" width="600"/>
+
+
+## Finished!
+
+Congratulations for making it to the end of the tutorial! 
 
 
 <div style="background-color: #e6f3ff; border: 1px solid #2196f3; padding: 15px; border-radius: 5px; margin: 10px 0;">

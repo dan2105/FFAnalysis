@@ -271,12 +271,12 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
   - name: e3mu2bp
     selection: region_name_NOSYS == std::string("e3mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
     variables: *2b_varibles
-    
-  - name: 4l1b
+
+  - name: TREx4l1b
     selection: (region_name_NOSYS != std::string("other") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2)
     variables: *1b_varibles
 
-  - name: 4l2bp
+  - name: TREx4l2bp
     selection: (region_name_NOSYS != std::string("other") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2)
     variables: *2b_varibles
       

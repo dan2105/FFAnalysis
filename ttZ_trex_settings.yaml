@@ -1,19 +1,33 @@
-selected_regions: ["4l1b.*","4l2bp.*"]
+selected_regions: ["TREx4l.*n_mu.*",
+                  "TREx4l.*n_el.*",
+                  "TREx4l.*n_jet.*",
+                  "TREx4l.*n_bjet.*",
+                  "TREx4l.*bjet0_pt.*",
+                  "TREx4l.*bjet1_pt.*",
+                  "TREx4l.*leading_GN2_quantile.*",
+                  "TREx4l.*subleading_GN2_score.*",
+                  "TREx4l.*met_met.*",
+                  "TREx4l.*ttbar_mass.*",
+                  "TREx4l.*ttz_score_onnx.*"] # This allows to filter which regions + variable pairs are used.
 
-Job:
+Job: # This corresponds to TREx settings.
   Label: ttZ
   CmeLabel: 13.6
   LumiLabel: 29.0
 
-Fit:
+Fit: # This corresponds to TREx settings.
   FitType: "SPLUSB"
   FitRegion: "CRSR"
   POIAsimov: 1
   FitBlind: "True"
 
-samples:
+samples: # Sample settings. They need to match the ones defined in ttZconfig.yaml
+    - name: "data"
+      Color: 1
+      Title: "Data"
+      Type: "DATA"
     - name: "ttll"
-      Color: 4
+      Color: 4 # You can define the sample colour, title and type.
       Title: "t#bar{t}Z"
       Type: "SIGNAL"
     - name: "tWZ"
@@ -29,15 +43,24 @@ samples:
       Title: "ZZ4l"
       Type: "BACKGROUND"
 
-Regions:
-  - name: 4l1b.*
-    Type: "VALIDATION"
-  - name: 4l2bp.*
-    Type: "VALIDATION"
-  - name: 4l1b.*ttz_score_onnx.*
+Regions: # This block helps to overwrite options in specifc regions.
+  - name: TREx4l.*
+    Type: "VALIDATION" # For example this,
+  - name: TREx4l.*ttz_score_onnx.*
     Type: "SIGNAL"
-  - name: 4l2bp.*ttz_score_onnx.*
-    Type: "SIGNAL"
+    Rebin: 10 # or this.
+  - name: TREx4l.*bjet0_pt.*
+    Type: "VALIDATION"
+    Rebin: 10
+  - name: TREx4l.*bjet1_pt.*
+    Type: "VALIDATION"
+    Rebin: 10
+  - name: TREx4l.*met_met.*
+    Type: "VALIDATION"
+    Rebin: 12
+  - name: TREx4l.*ttbar_mass.*
+    Type: "VALIDATION"
+    Rebin: 20
 
 Systematics:
     - name: "Luminosity"
@@ -47,7 +70,7 @@ Systematics:
       OverallDown: -0.017
       Category: "Instrumental"
 
-NormFactors:
+NormFactors: # We can attach normalisation factors to the samples.
     - name: "mu_signal"
       Title: "#mu(signal)"
       Nominal: 1

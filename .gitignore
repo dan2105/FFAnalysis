@@ -7,3 +7,7 @@ install*/*
 
 # Ignore output files
 output*/*
+
+# Ignore plots and TRex files
+Plots/*
+my_trex.config
