@@ -13,7 +13,6 @@ We will adopt the following conventions:
 echo "Hello world!"
 ```
 </div>
-</div>
 
 - when we refer to code that needs to be modified inside a specific file, it will highlighted in green. The corresponding file name will be at the top of the code.
 
@@ -48,23 +47,13 @@ int main() {
 
 ## 0.0 Install
 
-<div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
-<h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
-
-This tutorial is only valid for the following branches of `TopCPToolkit` and `FastFrames`:
-
-- TopCPToolkit v2.10.0
-- FastFrames v5.4.0
-
-This tutorial **will not be updated in time**.
-</div>
-
 First, we will install `FastFrames`.
 
 <div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
 
-We assume that you are running this tutorial inside an `lxplus` machine, located at `/eos/user/<your_username_first_letter>/<your_username>`.
+We assume that you are running this tutorial inside an <code>lxplus</code> machine, located at <code>/eos/user/your_username_first_letter/your_username</code>.
+
 </div>
 
 Setup the environment and download the code:
@@ -82,7 +71,6 @@ setupATLAS --quiet && lsetup git && asetup StatAnalysis,0.5.3
 
 ```
 </div>
-</div>
 
 Let's now compile and install FastFrames:
 
@@ -99,12 +87,12 @@ source build_ff/setup.sh
 
 ```
 </div>
-</div>
 
 <div style="background-color: #e6f3ff; border: 1px solid #2196f3; padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color: #0d47a1; margin-top: 0;">More details...</h4>
 
-To see installation instructions for different platforms and extendend details click [here](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/#how-to-checkout-and-compile-the-code).
+To see installation instructions for different platforms and extendend details click <a href="https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/#how-to-checkout-and-compile-the-code" target="_blank">here</a>
+
 </div>
 
 <div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
@@ -130,7 +118,6 @@ python3 python/merge_empty_grid_files.py --root_files_folder /eos/atlas/atlascer
 
 ```
 </div>
-</div>
 
 <div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
@@ -150,7 +137,6 @@ python3 python/produce_metadata_files.py --root_files_folder /eos/atlas/atlascer
 
 ```
 </div>
-</div>
 
 This creates a directory called `metadata` one level up in the directory hierarchy. This directory contains two files: `filelist.txt` and `sum_of_weights.txt`.
 
@@ -166,7 +152,6 @@ To run the framework the application entry point is the python script `FastFrame
 python3 python/FastFrames -h
 
 ```
-</div>
 </div>
 
 The most important variables that define the run are:
@@ -217,11 +202,10 @@ python3 python/FastFrames.py -c ../ttZconfig.yaml --step h --samples ttZnunu
 
 ```
 </div>
-</div>
 
 This will create `ttZnunu.root` file under the `output_histograms` directory. If you inspect the output file, you will see the following structure:
 
-<img src="image1.png" alt="Architecture" width="600"/>
+<img src="../image1.png" alt="Architecture" width="600"/>
 
 This structure corresponds to what is specified under the `regions` and `variables` blocks in the `ttZconfig.yaml` file:
 
@@ -266,7 +250,7 @@ general:
 
 you will instead see the following output structure (in addition to the increased run time):
 
-<img src="image2.png" alt="Architecture" width="600"/>
+<img src="../image2.png" alt="Architecture" width="600"/>
 
 Finally, in the `samples` block you define the list of MC/Data samples used in the analysis:
 
@@ -292,7 +276,7 @@ samples: # All the samples to be used in the analysis.
 <div style="background-color: #e6f3ff; border: 1px solid #2196f3; padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color: #0d47a1; margin-top: 0;">More details...</h4>
 
-A comprehensive list of options that can be used to steer FastFrames can be found [here](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/config/).
+A comprehensive list of options that can be used to steer FastFrames can be found <a href="https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/config/">here.</a>
 </div>
 
 ### 1.2 Changing the configuration file:
@@ -364,7 +348,7 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
 <div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 1</h4>
 
-Add two variables: the number of tight electrons, and the number of jets passing the `jet_select_baselineJvt_NOSYS` selection.
+Add two variables: the number of tight electrons, and the number of jets passing the <code>jet_select_baselineJvt_NOSYS</code> selection.
 
 Add two more regions: a four-electron region and a two-muon + two-electron region. Re-use the same variables.
 </div>
@@ -547,7 +531,7 @@ ntuples: # Use this block to define the ntuples to be created.
 <div style="background-color: #e6f3ff; border: 1px solid #2196f3; padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color: #0d47a1; margin-top: 0;">More details...</h4>
 
-For additional information on how to configure and use ntuples, refer to the [FastFrames documentation](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/config/#ntuples-block-settings).
+For additional information on how to configure and use ntuples, refer to the <a href="https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/config/#ntuples-block-settings">FastFrames documentation</a>.
 </div>
 
 ## 2.0 Using a custom class in FastFrames:
@@ -565,7 +549,7 @@ git restore .
 git checkout second-part
 ```
 
-Once you do this, you can skip and go to `Section 2.1.3`.
+Once you do this, you can skip and go to <code>Section 2.1.3</code>.
 </div>
 
 ### 2.1 Install and configure:
@@ -577,7 +561,7 @@ First, we need to download the tutorial code, install `FastFrames` and install t
 <div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
 
-We assume that you are running this tutorial inside an `lxplus` machine, located at `/eos/user/<your_username_first_letter>/<your_username>`.
+We assume that you are running this tutorial inside an <code>lxplus</code> machine, located at <code>/eos/user/your_username_first_letter/your_username</code>.
 </div>
 
 <div style="background-color:rgb(255, 220, 220); padding: 15px; border-radius: 6px; border-left: 4px solid rgb(165, 19, 11);">
@@ -645,11 +629,13 @@ The main point of a custom class is to be able to make object manipulations thor
 FastFrames can be extended with a "custom class" where we can write a single function and re-use it. The custom class [skeleton source code](https://gitlab.cern.ch/atlas-amglab/FastFramesCustomClassTemplate/-/blob/main/MyCustomFrame/MyCustomFrame.h?ref_type=heads) has methods that allow you to define variables for histograming, ntupling and only for the truth variables.
 
 The basic structure of the custom class code is:
+```
 - FastFramesCustomClassTemplate/
-  - MyCustomFrame/ ------------ This is the name of the class.
+  - MyCustomFrame/ -------- This is the name of the class.
     - MyCustomFrame.h ----- Header file where the class declarations live.
-  - ROOT/ ------------------------ Directory containing the class implementation.
+  - ROOT/ ----------------- Directory containing the class implementation.
     - MyCustomFrame.cc ---- This is where the variable definitions go! 
+```
 
 First, to use the custom class we need to add the `custom_frame_name` option to the general block.
 
@@ -667,8 +653,8 @@ general:
 <div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
 
-The name of the custom class can be changed using the provided `renameFiles.sh` script. 
-**DO NOT** do this for the tutorial!
+The name of the custom class can be changed using the provided <code>renameFiles.sh</code> script. 
+DO NOT do this for the tutorial!
 </div>
 
 Now, we can add the number of jets passing some selections via the custom code. To add a custom variable that is **Systematics dependent** we use the `MainFrame::systematicDefine` method. We need to pass:
@@ -703,21 +689,15 @@ mainNode = MainFrame::systematicDefine(mainNode,
 <div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
 
-Notice how we made use of the helper function to count the number of objects that FastFrames already provides in `DefineHelpers.h`. For more information please read the [documentation here](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/helpers/).
+Notice how we made use of the helper function to count the number of objects that FastFrames already provides in <code>DefineHelpers.h</code>. For more information please read the <a href="https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/helpers/">documentation here</a>.
 </div>
 
 <div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
 
-If our variable is **not systematic dependent** we can instead of using
-```
-mainNode = MainFrame::systematicDefine(mainNode, ...)
-```
-use 
-```
-mainNode = mainNode.Define(..)
-```
-see the [documentation here](https://root.cern/doc/v628/classROOT_1_1RDF_1_1RInterface.html#a4698601205a55ac49279150d56fc904f).
+If a variable is not systematic dependent, one can instead of using <code>mainNode = MainFrame::systematicDefine(mainNode, ...)</code> use <code>mainNode = mainNode.Define(..)</code>.
+
+See the <a href="https://root.cern/doc/v628/classROOT_1_1RDF_1_1RInterface.html#a4698601205a55ac49279150d56fc904f"> documentation here</a>.
 </div>
 
 Now, one can add a region in the `config.yaml` file, use this variable for a selection and plot it.
@@ -757,9 +737,9 @@ cmake --build build_custom -j4 --target install
 <div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 3</h4>
 
-- Make the previously described changes.
-- Add a function to count the number of tight muons/electrons with pT >= 7 GeV.
-- Add the corresponding variables using the previous function.
+<p>Make the previously described changes.</p>
+<p>Add a function to count the number of tight muons/electrons with pT &gt;= 7 GeV.</p>
+<p>Add the corresponding variables using the previous function.</p>
 </div>
 
 <details>
@@ -795,7 +775,7 @@ cmake --build build_custom -j4 --target install
 
 </details>
 
-FastFrames can also assist with the creation of `TLorentzVector` (TLV) containers from the individual particles `pT`, `eta`, `phi`, `e` containers. In FastFrames we assume that `eta` and `phi` are not affected by systematic variations. You just need to add the following line to the general block:
+FastFrames can also assist with the creation of `TLorentzVector` (TLV) containers from the individual particles `pT`, `eta`, `phi`, `e` containers. You just need to add the following line to the general block:
 
 <div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
 <strong style="color:rgb(1, 142, 32);"></strong>
@@ -830,9 +810,11 @@ mainNode = MainFrame::systematicDefine(mainNode,
 <div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 4</h4>
 
-- Make the previously described changes.
-- Add also pT-sorted vectors for muons and electrons.
-- Add a function for pT-sorted b-jets passing the 85% working point.
+<ul>
+  <li>Make the previously described changes.</li>
+  <li>Add also pT-sorted vectors for muons and electrons.</li>
+  <li>Add a function for pT-sorted b-jets passing the 85% working point.</li>
+</ul>
 </div>
 
 <details>
@@ -875,13 +857,15 @@ Sometimes the functions that we use to define variables are not simple and they 
 
 One can create two files: `Variables.h` and `Variables.cc` and include them in the custom class structure like:
 
+```
 - FastFramesCustomClassTemplate/
-  - MyCustomFrame/ ------------ This is the name of the class.
+  - MyCustomFrame/ -------- This is the name of the class.
     - MyCustomFrame.h ----- Header file where the class declarations live.
-    - Variables.h ------- Header file for the function declarations.
-  - ROOT/ ------------------------ Directory containing the class implementation.
+    - Variables.h --------- Header file for the function declarations.
+  - ROOT/ ----------------- Directory containing the class implementation.
     - MyCustomFrame.cc ---- This is where the variable definitions go!
-    - Variables.cc ------- This is where the function definitions go.
+    - Variables.cc -------- This is where the function definitions go.
+```
 
 A good template (it already includes an example function) for these files is:
 
@@ -1006,16 +990,19 @@ cmake --build build_custom -j4 --target install
 <div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 5</h4>
 
-- Make the previously described changes.
-- Add a function that classifies the events into regions, it must return a string between the following options:
-  4e, 4mu, 2e2mu, mu3e, e3mu, other.
-  The regions must have:
-  - n_electrons + n_muons = 4,
-  - the sum of the charges must be zero.
-  - the leading lepton must have a pT >= 27 GeV.
-- Add a function for pT-sorted b-jets passing the 85% working point.
-- Add these different regions to the configuration. Add histograms for the number of muons, electrons and b-jets in every region.
-- Split further into regions with one b-tagged jet (1b) and two or more b-jets (2bp). For these regions add the histograms with the pT of the leading and sub-leading b-jets.
+<ul>
+  <li>Make the previously described changes.</li>
+  <li>Add a function that classifies the events into regions. It must return a string which is one of the following options: <strong>4e</strong>, <strong>4mu</strong>, <strong>2e2mu</strong>, <strong>mu3e</strong>, <strong>e3mu</strong>, or <strong>other</strong>. The regions must satisfy:
+    <ul>
+      <li>n_electrons + n_muons = 4</li>
+      <li>The sum of the charges must be zero</li>
+      <li>The leading lepton must have a pT &gt;= 27 GeV</li>
+    </ul>
+  </li>
+  <li>Add a function for pT-sorted b-jets passing the 85% working point.</li>
+  <li>Add these different regions to the configuration. Add histograms for the number of muons, electrons, and b-jets in every region.</li>
+  <li>Split further into regions with one b-tagged jet (1b) and two or more b-jets (2bp). For these regions, add the histograms with the pT of the leading and sub-leading b-jets.</li>
+</ul>
 </div>
 
 <details>
@@ -1472,7 +1459,7 @@ class makeTruthTLV {
 <div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
 
-This time instead of using a function to define our variable we used a "Functor class". This is an abstraction that provides a storage (in this case `m_particleID`) and an overloaded `()` operator. This allows for more flexibility since we can "pass" parameters to the function and this makes it more flexible.
+This time instead of using a function to define our variable we used a "Functor class". This is an abstraction that provides a storage (in this case <code>m_particleID</code>) and an overloaded <code>()</code> operator. This allows for more flexibility since we can "pass" parameters to the function and this makes it more flexible.
 </div>
 
 Finally, since the `truth_b_pt` and `truth_bbar_pt` variables are only valid for our `ttll` sample, we want to exclude them from other samples. This is achieved via the `exclude_variables` option, let's put this under the samples we want to apply the skim:
@@ -1501,14 +1488,14 @@ samples: # All the samples to be used in the analysis.
 Implement the previously described changes.
 </div>
 
-### 2.3 Per-sample decisions and matching truth and reco trees:
+### 2.4 Per-sample decisions and matching truth and reco trees:
 
 Sometimes you need to define a specific variable just for a given sample. One can do this via the `sample` parameter in the `MyCustomFrame::defineVariables` method.
 
 <div style="background-color: #e6f3ff; border: 1px solid #2196f3; padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color: #0d47a1; margin-top: 0;">More details...</h4>
 
-If we wanted even further control (e.g. at the MC campaign or DSID level) we can use the tools explained in the [documentation](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/latest/tutorial/#uniquesample-based-decision-in-the-custom-class).
+If we wanted even further control (e.g. at the MC campaign or DSID level) we can use the tools explained in the <a href="https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/latest/tutorial/#uniquesample-based-decision-in-the-custom-class"> documentation</a>.
 </div>
 
 For example, let's say that only for the signal sample we want to perform a DeltaR matching between the previously created `truth_b_TLV` and the reco-level b-tagged jets in the `sorted_bjet_TLV_NOSYS` container.
@@ -1616,8 +1603,6 @@ exclude_variables: &truth_excluded
 Implement the previously described changes.
 </div>
 
-- Implement the branch protection?
-
 ## 3.0 Machine learning:
 
 In this part of the tutorial we will explain how machine learning (ML) models can be used in FastFrames. FastFrames offers two options:
@@ -1645,7 +1630,7 @@ The model outputs a score between zero and one. Two models are provided in the `
 <div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 9</h4>
 
-Define the input variables and add them to the `4mu1b` region for the variables to be replicated in all the remaining regions.
+Define the input variables and add them to the <strong>4mu1b</strong> region for the variables to be replicated in all the remaining regions.
 </div>
 
 <details>
@@ -1960,7 +1945,7 @@ With the input variables defined: `GN2_quantile_leading_NOSYS`, `GN2_quantile_su
 <div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 10</h4>
 
-Look at the FF ONNX documentation [here](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/latest/config/#simple_onnx_inference-block-settings) and write an appropriate `simple_onnx_inference` block. Add the model output variable to the `4mu1b` and the subsequent regions.
+Look at the FF ONNX documentation <a href="https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/latest/config/#simple_onnx_inference-block-settings">here</a> and write an appropriate <code>simple_onnx_inference</code> block. Add the model output variable to the <strong>4mu1b</strong> and the subsequent regions.
 </div>
 
 <details>
@@ -2005,7 +1990,7 @@ regions:
 <div style="background-color: #e6f3ff; border: 1px solid #2196f3; padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color: #0d47a1; margin-top: 0;">More details...</h4>
 
-To find the name of the input and output tensors for a given ONNX model, you can use the [Netron app](https://netron.app).
+To find the name of the input and output tensors for a given ONNX model, you can use the <a href="https://netron.app"> Netron app</a>.
 </div>
 
 
@@ -2133,7 +2118,7 @@ python3 python/produce_trexfitter_config.py -c ../ttZconfig.yaml -o ../my_trex.c
 <div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
 
-The `produce_trexfitter_config.py` script does not support the `use_region_subfolders` option. You have to re-run the histogram production with the latter option set to `False` to be able to use the `TRExFitter` configuration generation.
+The <code>produce_trexfitter_config.py</code> script does not support the <code>use_region_subfolders</code> option. You have to re-run the histogram production with the latter option set to <code>False</code> to be able to use the <code>TRExFitter</code> configuration generation.
 </div>
 
 
@@ -2252,7 +2237,7 @@ trex-fitter -hwd ../my_trex.config
 
 Now, you can inspect the `Plots/Plots/` directory and have a look at the produced histograms. For example the `TREx4l2bp_n_mu.pdf` plot looks like:
 
-<img src="image3.png" alt="Architecture" width="600"/>
+<img src="../image3.png" alt="Architecture" width="600"/>
 
 
 ## Finished!
@@ -2271,16 +2256,17 @@ git clone --branch solution ssh://git@gitlab.cern.ch:7999/dbaronmo/fftutorialtop
 ```
 </div>
 
+
 <div style="background-color: #e6f3ff; border: 1px solid #2196f3; padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color: #0d47a1; margin-top: 0;">More details...</h4>
 
-You can find more information about the following topics in these links:
-
-- [FastFrames documentation](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/).
-- [TopCPToolkit documentation](https://topcptoolkit.docs.cern.ch).
-- [FastFrames source code](https://gitlab.cern.ch/atlas-amglab/fastframes/).
-- [FastFrames main tutorial](https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/tutorial/).
-- [FastFrames mattermost channel](https://mattermost.web.cern.ch/top-analysis/channels/histogramming-tool-rdataframe).
-- [HTCondor ATLAS](https://batchdocs.web.cern.ch/tutorial/introduction.html)
-
+<p>You can find more information about the following topics in these links:</p>
+<ul>
+  <li><a href="https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/">FastFrames documentation</a></li>
+  <li><a href="https://topcptoolkit.docs.cern.ch">TopCPToolkit documentation</a></li>
+  <li><a href="https://gitlab.cern.ch/atlas-amglab/fastframes/">FastFrames source code</a></li>
+  <li><a href="https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/tutorial/">FastFrames main tutorial</a></li>
+  <li><a href="https://mattermost.web.cern.ch/top-analysis/channels/histogramming-tool-rdataframe">FastFrames mattermost channel</a></li>
+  <li><a href="https://batchdocs.web.cern.ch/tutorial/introduction.html">HTCondor ATLAS</a></li>
+</ul>
 </div>
