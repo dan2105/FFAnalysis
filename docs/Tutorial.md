@@ -1,4 +1,4 @@
-# FastFrames tutorial: ATLAS Top Workshop 2025 CHANGE PLEASEMODIFYME
+# FastFrames tutorial: ATLAS Top Workshop 2025
 
 This tutorial will guide you through the setup of a `FastFrames` module to analyse the datasets previously produced in the `TopCPToolkit` tutorial.
 
@@ -48,6 +48,17 @@ int main() {
 
 ## 0.0 Install
 
+<div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
+
+This tutorial is only valid for the following branches of `TopCPToolkit` and `FastFrames`:
+
+- TopCPToolkit v2.10.0
+- FastFrames v5.4.0
+
+This tutorial **will not be updated in time**.
+</div>
+
 First, we will install `FastFrames`.
 
 <div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
@@ -62,7 +73,7 @@ Setup the environment and download the code:
 
 ```bash
 # Clone the tutorial repository Create a directory to store your work
-git clone --branch PLEASEMODIFYME ssh://git@gitlab.cern.ch:7999/dbaronmo/fftutorialtopws2025.git FFTutorial --recurse-submodules
+git clone --branch first-part ssh://git@gitlab.cern.ch:7999/dbaronmo/fftutorialtopws2025.git FFTutorial --recurse-submodules
 cd FFTutorial
 
 
@@ -115,7 +126,7 @@ Before doing any analysis, we first need to handle the cases where in the `TopCP
 
 ```bash
 # Clean input files
-python3 python/merge_empty_grid_files.py --root_files_folder PLEASEMODIFYME
+python3 python/merge_empty_grid_files.py --root_files_folder /eos/atlas/atlascerngroupdisk/phys-top/Top_Group_Tutorials/Tutorial_2025/
 
 ```
 </div>
@@ -135,7 +146,7 @@ FastFrames also needs to read from a database that specifies the type of sample,
 ```bash
 # Produce the input files metadata
 cd fastframes
-python3 python/produce_metadata_files.py --root_files_folder PLEASEMODIFYME --output_path ../metadata/
+python3 python/produce_metadata_files.py --root_files_folder /eos/atlas/atlascerngroupdisk/phys-top/Top_Group_Tutorials/Tutorial_2025/ --output_path ../metadata/
 
 ```
 </div>
@@ -551,7 +562,7 @@ This is the starting point for the workshop tutotorial. If you have followed the
 git restore .
 
 # Checkout the starting point for the live tutorial.
-git checkout PLEASEMODIFYME
+git checkout second-part
 ```
 
 Once you do this, you can skip and go to `Section 2.1.3`.
@@ -574,7 +585,7 @@ We assume that you are running this tutorial inside an `lxplus` machine, located
 
 ```bash
 # Clone the tutorial repository Create a directory to store your work
-git clone --branch PLEASEMODIFYME ssh://git@gitlab.cern.ch:7999/dbaronmo/fftutorialtopws2025.git FFTutorial --recurse-submodules
+git clone --branch second-part ssh://git@gitlab.cern.ch:7999/dbaronmo/fftutorialtopws2025.git FFTutorial --recurse-submodules
 cd FFTutorial
 
 # Setup environment
@@ -784,7 +795,7 @@ cmake --build build_custom -j4 --target install
 
 </details>
 
-FastFrames can also assist with the creation of `TLorentzVector` (TLV) containers from the individual particles `pT`, `eta`, `phi`, `e` containers. You just need to add the following line to the general block:
+FastFrames can also assist with the creation of `TLorentzVector` (TLV) containers from the individual particles `pT`, `eta`, `phi`, `e` containers. In FastFrames we assume that `eta` and `phi` are not affected by systematic variations. You just need to add the following line to the general block:
 
 <div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
 <strong style="color:rgb(1, 142, 32);"></strong>
@@ -2248,6 +2259,17 @@ Now, you can inspect the `Plots/Plots/` directory and have a look at the produce
 
 Congratulations for making it to the end of the tutorial! 
 
+If you want to see the full solution please do:
+
+<div style="background-color:rgb(255, 220, 220); padding: 15px; border-radius: 6px; border-left: 4px solid rgb(165, 19, 11);">
+<strong style="color:rgb(195, 46, 12);"></strong>
+
+```bash
+# Get tutorial solution.
+git clone --branch solution ssh://git@gitlab.cern.ch:7999/dbaronmo/fftutorialtopws2025.git FFTutorial --recurse-submodules
+
+```
+</div>
 
 <div style="background-color: #e6f3ff; border: 1px solid #2196f3; padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color: #0d47a1; margin-top: 0;">More details...</h4>
