@@ -41,14 +41,14 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
         title : "Number of Muons ; nMuons ; Events"
         definition: nMuons_NOSYS
         binning:
-          min: 0
-          max: 8
+          min: -0.5
+          max: 7.5
           number_of_bins: 8
-  
+
   - name: all_tight_muon # Another region with a different selection.
     selection: "ROOT::VecOps::Sum(mu_select_tight_NOSYS) == mu_select_tight_NOSYS.size()"
     variables: *common_variables # Reuse the common variables defined above.
-  
+
   - name: 4mu
     selection: "nMuons_NOSYS == 4"
     variables: *common_variables # Reuse the common variables defined above.
@@ -75,7 +75,7 @@ samples: # All the samples to be used in the analysis.
 
   - name: "ttll" # Another sample.
     dsids: [522024, 522028, 522032] # List of DSIDs for the sample.
-    campaigns: ["mc23a"] 
+    campaigns: ["mc23a"]
     simulation_type: "fullsim" # For MC samples we have a different simulation type.
 
   - name: "tWZ"
