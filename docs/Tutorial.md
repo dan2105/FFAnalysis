@@ -149,7 +149,7 @@ To run the framework the application entry point is the python script `FastFrame
 
 ```bash
 # Get running options for FastFrames
-python3 python/FastFrames -h
+python3 python/FastFrames.py -h
 
 ```
 </div>
@@ -182,9 +182,9 @@ general:
     - files: ["/cvmfs/atlas.cern.ch/repo/sw/database/GroupData/dev/PMGTools/PMGxsecDB_mc23.txt"]
       campaigns: ["mc23a", "mc23d", "mc23e"]
   luminosity: # Luminosity for the different campaigns.
-    mc23a: 29049.3 
+    mc23a: 29049.3
     mc23d: 27239.9
-  automatic_systematics: False # Run over all systematics found in the input files. 
+  automatic_systematics: False # Run over all systematics found in the input files.
   nominal_only: True # Run with/without systematics.
   number_of_cpus: 4 # CPU cores to use for the analysis.
   use_region_subfolders: True # Save the histograms in subfolders per region.
@@ -198,12 +198,12 @@ When you run the code you need to point to this configuration file:
 
 ```bash
 # Get running options for FastFrames
-python3 python/FastFrames.py -c ../ttZconfig.yaml --step h --samples ttZnunu
+python3 python/FastFrames.py -c ../ttZconfig.yaml --step h --samples ttll
 
 ```
 </div>
 
-This will create `ttZnunu.root` file under the `output_histograms` directory. If you inspect the output file, you will see the following structure:
+This will create `ttll.root` file under the `output_histograms` directory. If you inspect the output file, you will see the following structure:
 
 <img src="../image1.png" alt="Architecture" width="600"/>
 
@@ -226,11 +226,11 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
           min: 0
           max: 200000
           number_of_bins: 100
-  
+
   - name: all_tight_muon # Another region with a different selection.
     selection: "ROOT::VecOps::Sum(mu_select_tight_NOSYS) == mu_select_tight_NOSYS.size()"
     variables: *common_variables # Reuse the common variables defined above.
-  
+
 ```
 </div>
 
@@ -268,7 +268,7 @@ samples: # All the samples to be used in the analysis.
 
   - name: "ttll" # Another sample.
     dsids: [522028, 522032] # List of DSIDs for the sample.
-    campaigns: ["mc23a"] 
+    campaigns: ["mc23a"]
     simulation_type: "fullsim" # For MC samples we have a different simulation type.
 ```
 </div>
@@ -406,7 +406,7 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
           min: 0
           max: 8
           number_of_bins: 8
-  
+
   - name: all_tight_muon # Another region with a different selection.
     selection: "ROOT::VecOps::Sum(mu_select_tight_NOSYS) == mu_select_tight_NOSYS.size()"
     variables: *common_variables # Reuse the common variables defined above.
@@ -624,7 +624,7 @@ source build_custom/setup.sh
 
 ### 2.2 Add new variables:
 
-The main point of a custom class is to be able to make object manipulations thorugh C++ code. This gives more flexibiliy to the analyser. For example in `Section 1.2.1` we learnt how to count the number of muons with a pT >= 7 GeV and that pass the tight selection. However, to do the same for electrons and jets we ended up writing the same expressions again. 
+The main point of a custom class is to be able to make object manipulations thorugh C++ code. This gives more flexibiliy to the analyser. For example in `Section 1.2.1` we learnt how to count the number of muons with a pT >= 7 GeV and that pass the tight selection. However, to do the same for electrons and jets we ended up writing the same expressions again.
 
 FastFrames can be extended with a "custom class" where we can write a single function and re-use it. The custom class [skeleton source code](https://gitlab.cern.ch/atlas-amglab/FastFramesCustomClassTemplate/-/blob/main/MyCustomFrame/MyCustomFrame.h?ref_type=heads) has methods that allow you to define variables for histograming, ntupling and only for the truth variables.
 
@@ -634,7 +634,7 @@ The basic structure of the custom class code is:
   - MyCustomFrame/ -------- This is the name of the class.
     - MyCustomFrame.h ----- Header file where the class declarations live.
   - ROOT/ ----------------- Directory containing the class implementation.
-    - MyCustomFrame.cc ---- This is where the variable definitions go! 
+    - MyCustomFrame.cc ---- This is where the variable definitions go!
 ```
 
 First, to use the custom class we need to add the `custom_frame_name` option to the general block.
@@ -653,7 +653,7 @@ general:
 <div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
 
-The name of the custom class can be changed using the provided <code>renameFiles.sh</code> script. 
+The name of the custom class can be changed using the provided <code>renameFiles.sh</code> script.
 DO NOT do this for the tutorial!
 </div>
 
@@ -671,7 +671,7 @@ For the number of jets case, the following code needs to be added to the `ROOT::
 ```cpp
 // MyCustomFrame.cc
 
-// Jets 
+// Jets
 // Lambda function to define the number of jets above 25 GeV.
 auto numberOfJets25 = [](const ROOT::VecOps::RVec<float>& ptV,
   const ROOT::VecOps::RVec<char>& selection) {
@@ -798,7 +798,7 @@ Once this is done, one can create pT-sorted containers using `DefineHelpers::sor
 
 // Specify the type for the pT sorting functions
 using sorted_particle_1sel = ROOT::VecOps::RVec<TLV>(*)(const ROOT::VecOps::RVec<TLV>&,const ROOT::VecOps::RVec<char>&);
-// Jets 
+// Jets
 LOG(INFO) << "Adding variable: sorted_jet_TLV_NOSYS" << std::endl;
 mainNode = MainFrame::systematicDefine(mainNode,
                                         "sorted_jet_TLV_NOSYS",
@@ -1142,7 +1142,7 @@ regions:
   - name: e3mu
     selection: region_name_NOSYS == std::string("e3mu")
     variables: *custom_class_variables # Reuse the common variables defined above.
-      
+
   - name: 4mu1b
     selection: region_name_NOSYS == std::string("4mu") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
     variables: &1b_varibles
@@ -1264,7 +1264,7 @@ public:
   virtual ROOT::RDF::RNode defineVariables(ROOT::RDF::RNode mainNode,
                                            const std::shared_ptr<Sample>& sample,
                                            const UniqueSampleID& id) override final;
-  
+
   virtual ROOT::RDF::RNode defineVariablesNtuple(ROOT::RDF::RNode mainNode,
                                                  const std::shared_ptr<Sample>& sample,
                                                  const UniqueSampleID& id) override final;
@@ -1273,7 +1273,7 @@ public:
                                                 const std::string& truth,
                                                 const std::shared_ptr<Sample>& sample,
                                                 const UniqueSampleID& sampleID) override final;
-  
+
   virtual ROOT::RDF::RNode defineVariablesNtupleTruth(ROOT::RDF::RNode node,
                                                       const std::string& treeName,
                                                       const std::shared_ptr<Sample>& sample,
@@ -1343,12 +1343,12 @@ For example, to add histograms from the `truth` tree to our signal ttZ sample (`
 samples:
   - name: "ttll" # Another sample.
       dsids: [522024, 522028, 522032] # List of DSIDs for the sample.
-      campaigns: ["mc23a"] 
+      campaigns: ["mc23a"]
       simulation_type: "fullsim" # For MC samples we have a different simulation type.
       truth:
       - name: ttZ_partons
         truth_tree_name: "truth" # The name of the tree you want to inspect.
-        event_weight: "weight_mc_NOSYS" 
+        event_weight: "weight_mc_NOSYS"
         pair_reco_and_truth_trees: True # This allows you to access the truth variables in the reco tree.
         variables: # Truth variables to be saved for the sample.
           - name: truth_b_pt
@@ -1370,7 +1370,7 @@ samples:
 ```
 </div>
 
-This will add the `truth_b_pt` and `truth_bbar_pt` variables when running only over the the `ttll` sample. However, we first need to define the variables they depend on. These variables should be defined via the `MyCustomFrame::defineVariablesTruth` method. 
+This will add the `truth_b_pt` and `truth_bbar_pt` variables when running only over the the `ttll` sample. However, we first need to define the variables they depend on. These variables should be defined via the `MyCustomFrame::defineVariablesTruth` method.
 
 Let's for instance define the TLVs for the b-jets coming from the t and tbar decays. This information is stored in the `truth` tree under the following variables:
 
@@ -1399,8 +1399,8 @@ ROOT::RDF::RNode MyCustomFrame::defineVariablesTruth(ROOT::RDF::RNode node,
                                                      const std::string& /*sample*/,
                                                      const std::shared_ptr<Sample>& /*sample*/,
                                                      const UniqueSampleID& /*sampleID*/) {
-  
-  // Define the truth TLorentzVector for the b and bbar quarks                                     
+
+  // Define the truth TLorentzVector for the b and bbar quarks
   LOG(INFO) << "Adding variable: truth_b_TLV" << std::endl;
   node = node.Define("truth_b_TLV",
                     ttZ::makeTruthTLV(5),
@@ -1441,7 +1441,7 @@ class makeTruthTLV {
                   int pdgId) const {
           // Create a vector to hold the TLorentzVectors
           TLV tlv(0,0,0,0);
-          
+
           // Check if the particle ID matches the given ID
           if (pdgId != m_particleID) return tlv;
 
@@ -1510,12 +1510,12 @@ First, to match the `reco` and `truth` trees (by default this is done via the `[
 
 // Inside MyCustomFrame::defineVariables()
 if (sample->name() == "ttll") {
-  // Define the truth TLorentzVector for the b and bbar quarks     
-  // Note that to acces the truth variables you need to use the `truth` prefix.                                
+  // Define the truth TLorentzVector for the b and bbar quarks
+  // Note that to acces the truth variables you need to use the `truth` prefix.
   LOG(INFO) << "Adding variable: recotruth_b_TLV" << std::endl;
   mainNode = mainNode.Define("recotruth_b_TLV",
                             ttZ::makeTruthTLV(5),
-                            {"truth.Ttz_MC_b_afterFSR_from_t_pt", 
+                            {"truth.Ttz_MC_b_afterFSR_from_t_pt",
                             "truth.Ttz_MC_b_afterFSR_from_t_eta",
                             "truth.Ttz_MC_b_afterFSR_from_t_phi",
                             "truth.Ttz_MC_b_afterFSR_from_t_m",
@@ -1767,7 +1767,7 @@ std::vector<int> getOtherIndices(int index1, int index2, std::size_t nLeptons) {
 
 // Function to get the indices of the two leptons with an invariant mass closest to the Z boson mass.
 std::vector<int> getClosestZPair(const ROOT::VecOps::RVec<TLV>& leptonTLV, const ROOT::VecOps::RVec<float>& leptonCharge){
-    
+
     // Check that the inputs have the same size.
     if (leptonTLV.size() != leptonCharge.size()){
         throw std::invalid_argument("leptonTLV and leptonCharge must have the same size");
@@ -1818,7 +1818,7 @@ float ttbarLeptonPairInvariantMass(
     const ROOT::VecOps::RVec<TLV>& electronTLV,
     const ROOT::VecOps::RVec<float>& muonCharge,
     const ROOT::VecOps::RVec<float>& electronCharge){
-        
+
         // If region is other, return 0.0f
         if (regionName == "other") return 0.0f;
 
@@ -2029,7 +2029,7 @@ Next, we need to define a new column that stores the output of running inference
 ```cpp
 // MyCustomFrame.cc
 
-// This function is called for each event in the sample. 
+// This function is called for each event in the sample.
 // It interacts with the ONNXWrapper class to perform inference.
 // We need the input variables as paramerters to the function.
 // We also need the pointer to the ONNXWrapper class.
@@ -2092,7 +2092,7 @@ regions:
 <div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 11</h4>
 
-Implement the previously shown changes. 
+Implement the previously shown changes.
 </div>
 
 ## 4.0 How to produce a TRExFitter configuration for plotting:
@@ -2111,7 +2111,7 @@ The command that generates the `TRExFitter` configuration is:
 
 ```bash
 # Generate TRExFitter config. Run from fastframes/
-python3 python/produce_trexfitter_config.py -c ../ttZconfig.yaml -o ../my_trex.config --trex_settings ../ttZ_trex_settings.yaml 
+python3 python/produce_trexfitter_config.py -c ../ttZconfig.yaml -o ../my_trex.config --trex_settings ../ttZ_trex_settings.yaml
 ```
 </div>
 
@@ -2210,7 +2210,7 @@ NormFactors: # We can attach normalisation factors to the samples.
       Min: -100
       Max: 100
       Samples: "ttll"
-    
+
     - name: "mu_bkg"
       Title: "#mu(bkg)"
       Nominal: 1
@@ -2231,7 +2231,7 @@ After the `produce_trexfitter_config.py` script is run, one will obtain a `my_tr
 mkdir Plots && cd Plots
 
 # Run TRExFitter
-trex-fitter -hwd ../my_trex.config  
+trex-fitter -hwd ../my_trex.config
 ```
 </div>
 
@@ -2242,7 +2242,7 @@ Now, you can inspect the `Plots/Plots/` directory and have a look at the produce
 
 ## Finished!
 
-Congratulations for making it to the end of the tutorial! 
+Congratulations for making it to the end of the tutorial!
 
 If you want to see the full solution please do:
 
