@@ -326,8 +326,8 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
         title : "Number of Muons ; nMuons ; Events"
         definition: nMuons_NOSYS
         binning:
-          min: 0
-          max: 8
+          min: -0.5
+          max: 7.5
           number_of_bins: 8
 ```
 </div>
@@ -500,6 +500,7 @@ Store the pT of electrons, muons and jets in GeV.
 # ttZconfig.yaml
 
 general:
+  define_custom_columns: # You can define new variables here. Use valid C++ syntax.
     - name: mu_pt_gev_NOSYS
       definition: mu_pt_NOSYS/1000.0 # Convert to GeV.
     - name: el_pt_gev_NOSYS
@@ -635,7 +636,7 @@ The basic structure of the custom class code is:
 - FastFramesCustomClassTemplate/
   - MyCustomFrame/ -------- This is the name of the class.
     - MyCustomFrame.h ----- Header file where the class declarations live.
-  - ROOT/ ----------------- Directory containing the class implementation.
+  - Root/ ----------------- Directory containing the class implementation.
     - MyCustomFrame.cc ---- This is where the variable definitions go!
 ```
 
