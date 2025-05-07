@@ -200,6 +200,8 @@ When you run the code you need to point to this configuration file:
 # Get running options for FastFrames
 python3 python/FastFrames.py -c ../ttZconfig.yaml --step h --samples ttll
 
+# or run over all samples:
+python3 python/FastFrames.py -c ../ttZconfig.yaml --step h
 ```
 </div>
 
@@ -219,9 +221,9 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
   - name: all_loose_muon # This postfix will be appended to every variable.
     selection: "ROOT::VecOps::Sum(mu_select_loose_NOSYS) == mu_select_loose_NOSYS.size()" # Selection string, needs to be valid C++ syntax.
     variables: &common_variables # Here you list the variables. Note the usage of the anchor (&). This allows you to reuse the same variables in other regions.
-      - name: mu_pt # Name of the variable. This will result in 'mu_pt_all_loose_muon'.
+      - name: "mu_pt" # Name of the variable. This will result in 'mu_pt_all_loose_muon'.
         title: "Muon p_{T} [GeV]; p_{T} [GeV]; Events"
-        definition: mu_pt_NOSYS
+        definition: "mu_pt_NOSYS"
         binning:
           min: 0
           max: 200000
@@ -295,8 +297,8 @@ To add a new variable one can use the `define_custom_columns` option:
 
 general:
   define_custom_columns: # You can define new variables here. Use valid C++ syntax.
-      - name: nMuons_NOSYS # Count the number of muons with a pT > 7 GeV and which pass the tight selection.
-        definition: mu_pt_NOSYS[mu_pt_NOSYS >= 7000 && mu_select_tight_NOSYS==true].size()
+      - name: "nMuons_NOSYS" # Count the number of muons with a pT > 7 GeV and which pass the tight selection.
+        definition: "mu_pt_NOSYS[mu_pt_NOSYS >= 7000 && mu_select_tight_NOSYS==true].size()"
 ```
 </div>
 

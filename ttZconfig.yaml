@@ -17,8 +17,8 @@ general:
   nominal_only: True # Run with/without systematics.
   config_define_after_custom_class : True
   define_custom_columns: # You can define new variables here. Use valid C++ syntax.
-    - name: nMuons_NOSYS
-      definition: mu_pt_NOSYS[mu_pt_NOSYS >= 7000 && mu_select_tight_NOSYS==true].size()
+    - name: "nMuons_NOSYS"
+      definition: "mu_pt_NOSYS[mu_pt_NOSYS >= 7000 && mu_select_tight_NOSYS==true].size()"
   create_tlorentz_vectors_for: ["jet", "el", "mu"] # Create TLorentzVectors for the specified objects.
   use_rvec: True # Use ROOT::RVec instead of std::vector.
   number_of_cpus: 4 # CPU cores to use for the analysis.
@@ -31,25 +31,25 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
     variables: &common_variables # Here you list the variables. Note the usage of the anchor (&). This allows you to reuse the same variables in other regions.
       - name: mu_pt # Name of the variable. This will result in 'mu_pt_all_loose_muon'.
         title: "Muon p_{T} [GeV]; p_{T} [GeV]; Events"
-        definition: mu_pt_NOSYS
+        definition: "mu_pt_NOSYS"
         binning:
           min: 0
           max: 200000
           number_of_bins: 100
       - name: "n_muons"
-        type: unsigned long
+        type: "unsigned long"
         title : "Number of Muons ; nMuons ; Events"
-        definition: nMuons_NOSYS
+        definition: "nMuons_NOSYS"
         binning:
           min: -0.5
           max: 7.5
           number_of_bins: 8
 
-  - name: all_tight_muon # Another region with a different selection.
+  - name: "all_tight_muon" # Another region with a different selection.
     selection: "ROOT::VecOps::Sum(mu_select_tight_NOSYS) == mu_select_tight_NOSYS.size()"
     variables: *common_variables # Reuse the common variables defined above.
 
-  - name: 4mu
+  - name: "4mu"
     selection: "nMuons_NOSYS == 4"
     variables: *common_variables # Reuse the common variables defined above.
 
