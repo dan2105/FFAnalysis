@@ -114,7 +114,7 @@ Before doing any analysis, we first need to handle the cases where in the `TopCP
 
 ```bash
 # Clean input files
-python3 python/merge_empty_grid_files.py --root_files_folder /eos/atlas/atlascerngroupdisk/phys-top/Top_Group_Tutorials/Tutorial_2025/
+python3 python/merge_empty_grid_files.py --root_files_folder /eos/atlas/atlascerngroupdisk/phys-top/Top_Group_Tutorials/Tutorial_2025/FastFrames/
 
 ```
 </div>
@@ -133,7 +133,7 @@ FastFrames also needs to read from a database that specifies the type of sample,
 ```bash
 # Produce the input files metadata
 cd fastframes
-python3 python/produce_metadata_files.py --root_files_folder /eos/atlas/atlascerngroupdisk/phys-top/Top_Group_Tutorials/Tutorial_2025/ --output_path ../metadata/
+python3 python/produce_metadata_files.py --root_files_folder /eos/atlas/atlascerngroupdisk/phys-top/Top_Group_Tutorials/Tutorial_2025/FastFrames/ --output_path ../metadata/
 
 ```
 </div>
@@ -2238,10 +2238,7 @@ trex-fitter -hwd ../my_trex.config
 ```
 </div>
 
-Now, you can inspect the `Plots/Plots/` directory and have a look at the produced histograms. For example the `TREx4l2bp_n_mu.pdf` plot looks like:
-
-<img src="../image3.png" alt="Architecture" width="600"/>
-
+Now, you can inspect the `Plots/Plots/` directory and have a look at the produced histograms.
 
 ## Finished!
 
