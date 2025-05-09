@@ -35,6 +35,20 @@ For the live-tutorial, due to time constraints, we created an special tag <code>
 
 </div>
 
+<div style="background-color: #e6f3ff; border: 1px solid #2196f3; padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color: #0d47a1; margin-top: 0;">More details...</h4>
+
+<p>You can find more information about the following topics in these links:</p>
+<ul>
+  <li><a href="https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/">FastFrames documentation</a></li>
+  <li><a href="https://topcptoolkit.docs.cern.ch">TopCPToolkit documentation</a></li>
+  <li><a href="https://gitlab.cern.ch/atlas-amglab/fastframes/">FastFrames source code</a></li>
+  <li><a href="https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/tutorial/">FastFrames main tutorial</a></li>
+  <li><a href="https://mattermost.web.cern.ch/top-analysis/channels/histogramming-tool-rdataframe">FastFrames mattermost channel</a></li>
+  <li><a href="https://batchdocs.web.cern.ch/tutorial/introduction.html">HTCondor ATLAS</a></li>
+</ul>
+</div>
+
 
 We will adopt the following conventions:
 
@@ -1626,6 +1640,7 @@ exclude_variables: &truth_excluded
 ```
 </div>
 
+Since we are using the `sample` parameter of the `MyCustomFrame::defineVariables` funtion, we need to uncomment it from the declaration and defintion of this function in `MyCustomFrame.h` and `MyCustomFrame.cc`. Otherwise, the code will not compile.
 
 <div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 8</h4>
@@ -2291,19 +2306,4 @@ If you want to see the full solution please do:
 git clone --branch solution ssh://git@gitlab.cern.ch:7999/dbaronmo/fftutorialtopws2025.git FFTutorial --recurse-submodules
 
 ```
-</div>
-
-
-<div style="background-color: #e6f3ff; border: 1px solid #2196f3; padding: 15px; border-radius: 5px; margin: 10px 0;">
-<h4 style="color: #0d47a1; margin-top: 0;">More details...</h4>
-
-<p>You can find more information about the following topics in these links:</p>
-<ul>
-  <li><a href="https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/">FastFrames documentation</a></li>
-  <li><a href="https://topcptoolkit.docs.cern.ch">TopCPToolkit documentation</a></li>
-  <li><a href="https://gitlab.cern.ch/atlas-amglab/fastframes/">FastFrames source code</a></li>
-  <li><a href="https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/tutorial/">FastFrames main tutorial</a></li>
-  <li><a href="https://mattermost.web.cern.ch/top-analysis/channels/histogramming-tool-rdataframe">FastFrames mattermost channel</a></li>
-  <li><a href="https://batchdocs.web.cern.ch/tutorial/introduction.html">HTCondor ATLAS</a></li>
-</ul>
 </div>
