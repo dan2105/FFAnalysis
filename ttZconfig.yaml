@@ -16,13 +16,11 @@ general:
   automatic_systematics: False
   nominal_only: True # Run with/without systematics.
   config_define_after_custom_class : True
-  define_custom_columns: # You can define new variables here. Use valid C++ syntax.
-    - name: "nMuons_NOSYS"
-      definition: "mu_pt_NOSYS[mu_pt_NOSYS >= 7000 && mu_select_tight_NOSYS==true].size()"
   create_tlorentz_vectors_for: ["jet", "el", "mu"] # Create TLorentzVectors for the specified objects.
   use_rvec: True # Use ROOT::RVec instead of std::vector.
   number_of_cpus: 4 # CPU cores to use for the analysis.
   use_region_subfolders: True # Save the histograms in subfolders per region.
+  custom_frame_name: "MyCustomFrame" # Name of the custom class.
 
 
 regions: # All the regions (defined by a selection criteria) to be used in the analysis.
@@ -36,27 +34,27 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
           min: 0
           max: 200000
           number_of_bins: 10
-      - name: "n_muons"
-        type: "unsigned long"
-        title : "Number of Muons ; nMuons ; Events"
-        definition: "nMuons_NOSYS"
-        binning:
-          min: -0.5
-          max: 7.5
-          number_of_bins: 8
 
   - name: "all_tight_muon" # Another region with a different selection.
     selection: "ROOT::VecOps::Sum(mu_select_tight_NOSYS) == mu_select_tight_NOSYS.size()"
     variables: *common_variables # Reuse the common variables defined above.
 
-  - name: "4mu"
-    selection: "nMuons_NOSYS == 4"
-    variables: *common_variables # Reuse the common variables defined above.
+  - name: 2jp
+    selection: "n_jets_NOSYS >= 2"
+    variables: &2j_variables # This allows you to reuse the same variables in other regions.
+      - name: n_jet
+        type: unsigned long
+        title : "Number of Jets ; nJets ; Events"
+        definition: n_jets_NOSYS
+        binning:
+          min: -0.5
+          max: 7.5
+          number_of_bins: 8
 
 
 ntuples: # Use this block to define the ntuples to be created.
   regions: # Only events passing the selection of one of the regions will be saved in the ntuple.
-    - 4mu
+    - 2jp
   #selection: "nJets_NOSYS == 3" # You can alternatively define a selection for the ntuples.
   branches: # These branches will be saved in the ntuple.
     - .*_pt_NOSYS # You can use regular expressions. This will select e, mu and jet pt.

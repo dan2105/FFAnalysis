@@ -549,7 +549,7 @@ This is the starting point for the workshop tutotorial. If you have followed the
 git restore .
 
 # Checkout the starting point for the live tutorial.
-git checkout second-part
+git checkout part-two
 ```
 
 Once you do this, you can skip and go to <code>Section 2.1.3</code>.
@@ -572,7 +572,7 @@ We assume that you are running this tutorial inside an <code>lxplus</code> machi
 
 ```bash
 # Clone the tutorial repository Create a directory to store your work
-git clone --branch second-part ssh://git@gitlab.cern.ch:7999/dbaronmo/fftutorialtopws2025.git FFTutorial --recurse-submodules
+git clone --branch part-two ssh://git@gitlab.cern.ch:7999/dbaronmo/fftutorialtopws2025.git FFTutorial --recurse-submodules
 cd FFTutorial
 
 # Setup environment
@@ -740,9 +740,8 @@ cmake --build build_custom -j4 --target install
 <div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
 <h4 style="color:rgb(88, 93, 0); margin-top: 0;">Exercise 3</h4>
 
-<p>Make the previously described changes.</p>
 <p>Add a function to count the number of tight muons/electrons with pT &gt;= 7 GeV.</p>
-<p>Add the corresponding variables using the previous function.</p>
+<p>Add the <code>n_muons_NOSYS</code> and <code>n_electrons_NOSYS</code> variables inside <code>MyCustomFrame::defineVariables</code> using the previously created function.</p>
 </div>
 
 <details>
