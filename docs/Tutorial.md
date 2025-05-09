@@ -550,6 +550,7 @@ git restore .
 
 # Checkout the starting point for the live tutorial.
 git checkout part-two
+git submodule update --init --recursive
 ```
 
 Once you do this, you can skip and go to <code>Section 2.1.3</code>.
@@ -611,6 +612,18 @@ cmake --build build_custom -j4 --target install
 # Setup environment
 source build_custom/setup.sh
 
+```
+</div>
+
+<div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note: reminder to build the metadata.</h4>
+
+To be able to run FastFrames you need to build the samples metadata. This is explained in <code>Section 0.1</code>. You need to:
+
+```bash
+# Produce the input files metadata
+cd fastframes
+python3 python/produce_metadata_files.py --root_files_folder /eos/atlas/atlascerngroupdisk/phys-top/Top_Group_Tutorials/Tutorial_2025/FastFrames/ --output_path ../metadata/
 ```
 </div>
 
