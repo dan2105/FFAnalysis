@@ -2,6 +2,40 @@
 
 This tutorial will guide you through the setup of a `FastFrames` module to analyse the datasets previously produced in the `TopCPToolkit` tutorial.
 
+<div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
+
+This tutorial is not maintained and was designed for the ATLAS Top Workshop 2025. The software versions used are:
+<ul>
+  <li>FastFrames v5.4.0.</li>
+  <li>TopCPToolkit v2.18.0.</li>
+</ul>
+
+The tutorial repository can be found <a href="https://gitlab.cern.ch/dbaronmo/fftutorialtopws2025" target="_blank">here</a>.
+
+One can follow this tutorial from:
+
+<ul>
+  <li>Section 0.0 --- This corresponds to tag <code>part-one</code>. </li>
+  <li>Section 2.0 --- This corresponds to tag <code>part-two</code>. </li>
+</ul>
+
+A <code>solution</code> tag is also provided.
+
+</div>
+
+<div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
+
+
+
+For the live-tutorial, due to time constraints, we created an special tag <code>live-tutorial</code>, we show Exercises 5 (first-bullet point), 8, 11 and Section 4.0.
+
+<div><strong>To start with the live tutorial go to Section 2.1.1 and replace tag <code>part-two</code> by <code>live-tutorial</code>.</strong></div>
+
+</div>
+
+
 We will adopt the following conventions:
 
 - when some code is intended to be run on your terminal, you will see it on a red box,

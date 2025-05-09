@@ -113,14 +113,6 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
           min: 0
           max: 1
           number_of_bins: 10
-      - name: ttz_score_onnx
-        title : "ttZ score (ONNX); ttZ score (ONNX); Events"
-        definition: "ML_output_NOSYS"
-        type: float
-        binning:
-          min: 0
-          max: 1
-          number_of_bins: 100
       - name: bjet0_pt
         title : "B-jet 0 p_{T} [GeV]; p_{T} [GeV]; Events"
         definition: "sorted_bjet_TLV_NOSYS.at(0).Pt()"
@@ -129,14 +121,6 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
           min: 0
           max: 200000
           number_of_bins: 10
-      - name: reco_index_truth_b
-        title : "Reco index of truth B-jet; Reco index; Events"
-        definition: "index_matched_b_NOSYS"
-        type: int
-        binning:
-          min: -1
-          max: 3
-          number_of_bins: 4
       - name: ttbar_mass
         title : "ttbar mass [GeV]; m_{tt} [GeV]; Events"
         definition: "ttbar_mass_NOSYS"
@@ -216,15 +200,7 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
     selection: region_name_NOSYS == std::string("e3mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
     variables: *2b_varibles
 
-  - name: TREx4l1b
-    selection: (region_name_NOSYS != std::string("other") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2)
-    variables: *1b_varibles
-
-  - name: TREx4l2bp
-    selection: (region_name_NOSYS != std::string("other") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2)
-    variables: *2b_varibles
-
-
+    
 simple_onnx_inference:
   - name: "ttZ_model" # Name of the model.
     model_paths: [ # Paths to the model files. You can use a list of paths.
@@ -255,8 +231,6 @@ samples: # All the samples to be used in the analysis.
     dsids: [0] # For data, this is always 0.
     campaigns: ["2022"] # The corresponding campaing or campaigns.
     simulation_type: "data" # Type of simulation.
-    exclude_variables: &truth_excluded
-      - reco_index_truth_b
 
 
   - name: "ttll" # Another sample.
@@ -267,7 +241,7 @@ samples: # All the samples to be used in the analysis.
       - name: ttZ_partons
         truth_tree_name: "truth" # The name of the tree you want to inspect.
         event_weight: "weight_mc_NOSYS"
-        pair_reco_and_truth_trees: True # This allows you to access the truth variables in the reco tree.
+        pair_reco_and_truth_trees: False # This allows you to access the truth variables in the reco tree.
         variables: # Truth variables to be saved for the sample.
           - name: truth_b_pt
             title : "Truth B-jet p_{T} [GeV]; p_{T} [GeV]; Events"
@@ -291,16 +265,13 @@ samples: # All the samples to be used in the analysis.
     dsids: [525955]
     campaigns: ["mc23a"]
     simulation_type: "fullsim"
-    exclude_variables: *truth_excluded
 
   - name: "ZZ4ljj"
     dsids: [701000]
     campaigns: ["mc23a"]
     simulation_type: "fullsim"
-    exclude_variables: *truth_excluded
 
   - name: "ZZ4l"
     dsids: [701040]
     campaigns: ["mc23a"]
     simulation_type: "fullsim"
-    exclude_variables: *truth_excluded
