@@ -19,8 +19,13 @@ general:
   create_tlorentz_vectors_for: ["jet", "el", "mu"] # Create TLorentzVectors for the specified objects.
   use_rvec: True # Use ROOT::RVec instead of std::vector.
   number_of_cpus: 4 # CPU cores to use for the analysis.
-  use_region_subfolders: True # Save the histograms in subfolders per region.
+  use_region_subfolders: False # Save the histograms in subfolders per region.
   custom_frame_name: "MyCustomFrame" # Name of the custom class.
+  create_tlorentz_vectors_for: ["jet", "el", "mu"] # Create TLorentzVectors for the specified objects.
+  custom_options: # Use this to pass custom options to the custom class.
+    metadata_histogram_name: metadata_ttZ
+    run_tag: ttZ-v1
+    runner: Diego
 
 
 regions: # All the regions (defined by a selection criteria) to be used in the analysis.
@@ -50,6 +55,186 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
           min: -0.5
           max: 7.5
           number_of_bins: 8
+  
+  - name: 4mu
+    selection: region_name_NOSYS == std::string("4mu")
+    variables: &custom_class_variables
+      - *2j_variables # Reuse the common variables defined above.
+      - name: n_mu
+        type: unsigned long
+        title : "Number of Muons ; nMuons ; Events"
+        definition: n_muons_NOSYS
+        binning:
+          min: 0
+          max: 8
+          number_of_bins: 8
+      - name: n_el
+        type: unsigned long
+        title : "Number of Electrons ; nElectrons ; Events"
+        definition: n_electrons_NOSYS
+        binning:
+          min: 0
+          max: 8
+          number_of_bins: 8
+      - name: n_bjet
+        type: unsigned long
+        title : "Number of b-jets ; nBJets ; Events"
+        definition: n_bjets_NOSYS
+        binning:
+          min: 0
+          max: 8
+          number_of_bins: 8
+
+  - name: 4e
+    selection: region_name_NOSYS == std::string("4e")
+    variables: *custom_class_variables
+
+  - name: 2e2mu
+    selection: region_name_NOSYS == std::string("2e2mu")
+    variables: *custom_class_variables
+
+  - name: mu3e
+    selection: region_name_NOSYS == std::string("mu3e")
+    variables: *custom_class_variables
+
+  - name: e3mu
+    selection: region_name_NOSYS == std::string("e3mu")
+    variables: *custom_class_variables # Reuse the common variables defined above.
+
+  - name: 4mu1b
+    selection: region_name_NOSYS == std::string("4mu") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: &1b_varibles
+      - *custom_class_variables # Reuse the common variables defined above.
+      - name: ttz_score
+        title : "ttZ score; ttZ score; Events"
+        definition: "ttZ_score_NOSYS"
+        type: float
+        binning:
+          min: 0
+          max: 1
+          number_of_bins: 10
+      - name: ttz_score_onnx
+        title : "ttZ score (ONNX); ttZ score (ONNX); Events"
+        definition: "ML_output_NOSYS"
+        type: float
+        binning:
+          min: 0
+          max: 1
+          number_of_bins: 100
+      - name: bjet0_pt
+        title : "B-jet 0 p_{T} [GeV]; p_{T} [GeV]; Events"
+        definition: "sorted_bjet_TLV_NOSYS.at(0).Pt()"
+        type: double
+        binning:
+          min: 0
+          max: 200000
+          number_of_bins: 10
+      - name: reco_index_truth_b
+        title : "Reco index of truth B-jet; Reco index; Events"
+        definition: "index_matched_b_NOSYS"
+        type: int
+        binning:
+          min: -1
+          max: 3
+          number_of_bins: 4
+      - name: ttbar_mass
+        title : "ttbar mass [GeV]; m_{tt} [GeV]; Events"
+        definition: "ttbar_mass_NOSYS"
+        type: float
+        binning:
+          min: 0
+          max: 500000
+          number_of_bins: 10
+      - name: leading_GN2_quantile
+        title : "Leading GN2 quantile; Leading GN2 quantile; Events"
+        definition: "GN2_quantile_leading_NOSYS"
+        type: float
+        binning:
+          min: 0
+          max: 7
+          number_of_bins: 7
+      - name: subleading_GN2_quantile
+        title : "Subleading GN2 quantile; Subleading GN2 quantile; Events"
+        definition: "GN2_quantile_subleading_NOSYS"
+        type: float
+        binning:
+          min: 0
+          max: 7
+          number_of_bins: 7
+      - name: met_met
+        title : "Missing ET [GeV]; E_{T}^{miss} [GeV]; Events"
+        definition: "met_met_NOSYS"
+        type: float
+        binning:
+          min: 0
+          max: 300000
+          number_of_bins: 15
+
+
+  - name: 4mu2bp
+    selection: region_name_NOSYS == std::string("4mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
+    variables: &2b_varibles
+      - *1b_varibles
+      - name: bjet1_pt
+        title : "B-jet 1 p_{T} [GeV]; p_{T} [GeV]; Events"
+        definition: "sorted_bjet_TLV_NOSYS.at(1).Pt()"
+        type: double
+        binning:
+          min: 0
+          max: 200000
+          number_of_bins: 10
+
+  - name: 4e1b
+    selection: region_name_NOSYS == std::string("4e") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: *1b_varibles
+
+  - name: 4e2bp
+    selection: region_name_NOSYS == std::string("4e") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
+    variables: *2b_varibles
+
+  - name: 2e2mu1b
+    selection: region_name_NOSYS == std::string("2e2mu") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: *1b_varibles
+
+  - name: 2e2mu2bp
+    selection: region_name_NOSYS == std::string("2e2mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
+    variables: *2b_varibles
+
+  - name: mu3e1b
+    selection: region_name_NOSYS == std::string("mu3e") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: *1b_varibles
+
+  - name: mu3e2bp
+    selection: region_name_NOSYS == std::string("mu3e") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
+    variables: *2b_varibles
+
+  - name: e3mu1b
+    selection: region_name_NOSYS == std::string("e3mu") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
+    variables: *1b_varibles
+
+  - name: e3mu2bp
+    selection: region_name_NOSYS == std::string("e3mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
+    variables: *2b_varibles
+
+  - name: TREx4l1b
+    selection: (region_name_NOSYS != std::string("other") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2)
+    variables: *1b_varibles
+
+  - name: TREx4l2bp
+    selection: (region_name_NOSYS != std::string("other") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2)
+    variables: *2b_varibles
+
+
+simple_onnx_inference:
+  - name: "ttZ_model" # Name of the model.
+    model_paths: [ # Paths to the model files. You can use a list of paths.
+      "../onnxModels/model_odd.onnx", # The expression deciding which model to use is:
+      "../onnxModels/model_even.onnx" # eventNumber % 2 == 0 ? model_pos_0 : model_pos_1
+    ]
+    inputs:
+      "input": ["GN2_quantile_leading_NOSYS", "GN2_quantile_subleading_NOSYS", "ttbar_mass_NOSYS", "met_met_NOSYS"]
+    outputs:
+      "output": ["ttZ_score_NOSYS"]
 
 
 ntuples: # Use this block to define the ntuples to be created.
@@ -70,23 +255,52 @@ samples: # All the samples to be used in the analysis.
     dsids: [0] # For data, this is always 0.
     campaigns: ["2022"] # The corresponding campaing or campaigns.
     simulation_type: "data" # Type of simulation.
+    exclude_variables: &truth_excluded
+      - reco_index_truth_b
+
 
   - name: "ttll" # Another sample.
     dsids: [522024, 522028, 522032] # List of DSIDs for the sample.
     campaigns: ["mc23a"]
     simulation_type: "fullsim" # For MC samples we have a different simulation type.
+    truth:
+      - name: ttZ_partons
+        truth_tree_name: "truth" # The name of the tree you want to inspect.
+        event_weight: "weight_mc_NOSYS"
+        pair_reco_and_truth_trees: True # This allows you to access the truth variables in the reco tree.
+        variables: # Truth variables to be saved for the sample.
+          - name: truth_b_pt
+            title : "Truth B-jet p_{T} [GeV]; p_{T} [GeV]; Events"
+            definition: "truth_b_TLV.Pt()"
+            type: double
+            binning:
+              min: 0
+              max: 200000
+              number_of_bins: 10
+          - name: truth_bbar_pt
+            title : "Truth Bbar-jet p_{T} [GeV]; p_{T} [GeV]; Events"
+            definition: "truth_bbar_TLV.Pt()"
+            type: double
+            binning:
+              min: 0
+              max: 200000
+              number_of_bins: 10
+
 
   - name: "tWZ"
     dsids: [525955]
     campaigns: ["mc23a"]
     simulation_type: "fullsim"
+    exclude_variables: *truth_excluded
 
   - name: "ZZ4ljj"
     dsids: [701000]
     campaigns: ["mc23a"]
     simulation_type: "fullsim"
+    exclude_variables: *truth_excluded
 
   - name: "ZZ4l"
     dsids: [701040]
     campaigns: ["mc23a"]
     simulation_type: "fullsim"
+    exclude_variables: *truth_excluded

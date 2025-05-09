@@ -973,6 +973,9 @@ namespace ttZ {
   }
 
   // MyCustomFrame.cc
+
+  #include "MyCustomFrame/Variables.h"
+
   // Lepton charges
   LOG(INFO) << "Adding variable: sorted_mu_charge_NOSYS" << std::endl;
   mainNode = MainFrame::systematicDefine(mainNode,
@@ -1865,22 +1868,6 @@ regions:
       - name: bjet0_pt
         title : "B-jet 0 p_{T} [GeV]; p_{T} [GeV]; Events"
         definition: "sorted_bjet_TLV_NOSYS.at(0).Pt()"
-        type: double
-        binning:
-          min: 0
-          max: 200000
-          number_of_bins: 10
-      - name: truth_b_pt
-        title : "Truth B-jet p_{T} [GeV]; p_{T} [GeV]; Events"
-        definition: "truth_b_TLV.Pt()"
-        type: double
-        binning:
-          min: 0
-          max: 200000
-          number_of_bins: 10
-      - name: truth_bbar_pt
-        title : "Truth Bbar-jet p_{T} [GeV]; p_{T} [GeV]; Events"
-        definition: "truth_bbar_TLV.Pt()"
         type: double
         binning:
           min: 0
