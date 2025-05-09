@@ -35,7 +35,7 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
         binning:
           min: 0
           max: 200000
-          number_of_bins: 100
+          number_of_bins: 10
       - name: "n_muons"
         type: "unsigned long"
         title : "Number of Muons ; nMuons ; Events"

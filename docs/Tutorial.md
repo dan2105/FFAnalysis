@@ -197,7 +197,7 @@ When you run the code you need to point to this configuration file:
 <strong style="color:rgb(195, 46, 12);"></strong>
 
 ```bash
-# Get running options for FastFrames
+# Run over ttll sample:
 python3 python/FastFrames.py -c ../ttZconfig.yaml --step h --samples ttll
 
 # or run over all samples:
@@ -227,7 +227,7 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
         binning:
           min: 0
           max: 200000
-          number_of_bins: 100
+          number_of_bins: 10
 
   - name: all_tight_muon # Another region with a different selection.
     selection: "ROOT::VecOps::Sum(mu_select_tight_NOSYS) == mu_select_tight_NOSYS.size()"
@@ -389,24 +389,24 @@ regions: # All the regions (defined by a selection criteria) to be used in the a
         title : "Number of Muons ; nMuons ; Events"
         definition: nMuons_NOSYS
         binning:
-          min: 0
-          max: 8
+          min: -0.5
+          max: 7.5
           number_of_bins: 8
       - name: "n_electrons"
         type: unsigned long
         title : "Number of Electrons ; nElectrons ; Events"
         definition: nElectrons_NOSYS
         binning:
-          min: 0
-          max: 8
+          min: -0.5
+          max: 7.5
           number_of_bins: 8
       - name: "n_jets"
         type: unsigned long
         title : "Number of Jets ; nJets ; Events"
         definition: nJets_NOSYS
         binning:
-          min: 0
-          max: 8
+          min: -0.5
+          max: 7.5
           number_of_bins: 8
 
   - name: all_tight_muon # Another region with a different selection.
@@ -720,8 +720,8 @@ regions:
           title : "Number of Jets ; nJets ; Events"
           definition: n_jets_NOSYS
           binning:
-            min: 0
-            max: 8
+            min: -0.5
+            max: 7.5
             number_of_bins: 8
 ```
 </div>
@@ -1157,7 +1157,7 @@ regions:
         binning:
           min: 0
           max: 200000
-          number_of_bins: 100
+          number_of_bins: 10
 
   - name: 4mu2bp
     selection: region_name_NOSYS == std::string("4mu") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2
@@ -1170,7 +1170,7 @@ regions:
         binning:
           min: 0
           max: 200000
-          number_of_bins: 100
+          number_of_bins: 10
 
   - name: 4e1b
     selection: region_name_NOSYS == std::string("4e") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2
@@ -1356,20 +1356,20 @@ samples:
         variables: # Truth variables to be saved for the sample.
           - name: truth_b_pt
             title : "Truth B-jet p_{T} [GeV]; p_{T} [GeV]; Events"
-            definition: "truth_b_TLV_NOSYS.Pt()"
+            definition: "truth_b_TLV.Pt()"
             type: double
             binning:
               min: 0
               max: 200000
-              number_of_bins: 100
+              number_of_bins: 10
           - name: truth_bbar_pt
             title : "Truth Bbar-jet p_{T} [GeV]; p_{T} [GeV]; Events"
-            definition: "truth_b_TLV_NOSYS.Pt()"
+            definition: "truth_bbar_TLV.Pt()"
             type: double
             binning:
               min: 0
               max: 200000
-              number_of_bins: 100
+              number_of_bins: 10
 ```
 </div>
 
@@ -1463,26 +1463,6 @@ class makeTruthTLV {
 <h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
 
 This time instead of using a function to define our variable we used a "Functor class". This is an abstraction that provides a storage (in this case <code>m_particleID</code>) and an overloaded <code>()</code> operator. This allows for more flexibility since we can "pass" parameters to the function and this makes it more flexible.
-</div>
-
-Finally, since the `truth_b_pt` and `truth_bbar_pt` variables are only valid for our `ttll` sample, we want to exclude them from other samples. This is achieved via the `exclude_variables` option, let's put this under the samples we want to apply the skim:
-
-<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
-<strong style="color:rgb(1, 142, 32);"></strong>
-
-```yaml
-# ttZconfig.yaml
-
-# For example we do not want these variables in data.
-samples: # All the samples to be used in the analysis.
-  - name: "data" # Name given to the sample.
-    dsids: [0] # For data, this is always 0.
-    campaigns: ["2022"] # The corresponding campaing or campaigns.
-    simulation_type: "data" # Type of simulation.
-    exclude_variables: &truth_excluded
-      - truth_b_pt
-      - truth_bbar_pt
-```
 </div>
 
 <div style="background-color:rgb(247, 250, 192); border: 1px solid rgb(95, 76, 0); padding: 15px; border-radius: 5px; margin: 10px 0;">
@@ -1587,14 +1567,12 @@ int recoIndexTruthBJet(const ROOT::VecOps::RVec<TLV>& recoBJets,
   definition: "index_matched_b_NOSYS"
   type: int
   binning:
-    min: -1
-    max: 3
-    number_of_bins: 4
+    min: -1.5
+    max: 3.5
+    number_of_bins: 5
 
 # The previous variable also needs to be added to the excluded variables from other samples!
 exclude_variables: &truth_excluded
-  - truth_b_pt
-  - truth_bbar_pt
   - reco_index_truth_b
 ```
 </div>
@@ -1621,7 +1599,7 @@ In other cases, you have to use method 2.0
 
 For this tutorial we will implement a *simple enough* model. However, we will also show how method 2.0 is implemented for this same model.
 
-The ML algorithm we will use has been trained to distinguis ttZ (signal) events from other physics processes (background). The inputs for the model are:
+The ML algorithm we will use has been trained to distinguish ttZ (signal) events from other physics processes (background). The inputs for the model are:
 
 - Jet leading GN2v01 quantile score.
 - Jet subleading GN2v01 quantile score.
@@ -1879,7 +1857,7 @@ regions:
         binning:
           min: 0
           max: 200000
-          number_of_bins: 100
+          number_of_bins: 10
       - name: truth_b_pt
         title : "Truth B-jet p_{T} [GeV]; p_{T} [GeV]; Events"
         definition: "truth_b_TLV.Pt()"
@@ -1887,7 +1865,7 @@ regions:
         binning:
           min: 0
           max: 200000
-          number_of_bins: 100
+          number_of_bins: 10
       - name: truth_bbar_pt
         title : "Truth Bbar-jet p_{T} [GeV]; p_{T} [GeV]; Events"
         definition: "truth_bbar_TLV.Pt()"
@@ -1895,7 +1873,7 @@ regions:
         binning:
           min: 0
           max: 200000
-          number_of_bins: 100
+          number_of_bins: 10
       - name: reco_index_truth_b
         title : "Reco index of truth B-jet; Reco index; Events"
         definition: "index_matched_b_NOSYS"
@@ -1911,7 +1889,7 @@ regions:
         binning:
           min: 0
           max: 500000
-          number_of_bins: 100
+          number_of_bins: 10
       - name: leading_GN2_quantile
         title : "Leading GN2 quantile; Leading GN2 quantile; Events"
         definition: "GN2_quantile_leading_NOSYS"
@@ -1935,7 +1913,7 @@ regions:
         binning:
           min: 0
           max: 300000
-          number_of_bins: 150
+          number_of_bins: 15
 ```
 
 </div>
@@ -1983,7 +1961,7 @@ regions:
           binning:
             min: 0
             max: 1
-            number_of_bins: 100
+            number_of_bins: 10
 ```
 
 </div>
@@ -2101,6 +2079,32 @@ Implement the previously shown changes.
 ## 4.0 How to produce a TRExFitter configuration for plotting:
 
 FastFrames can help with the creation of [TRExFitter](https://trexfitter-docs.web.cern.ch/trexfitter-docs/latest/) configurations. These files can be used to perform a fit or just plot our histograms. In this part of the tutorial we will show how to do the latter.
+
+First, we create two additional regions in the configuration, these ones will be selected for plotting. In these two regions we add all the 4-lepton cases and separate by number of b-tagged jets. 
+
+<div style="background-color:rgb(227, 253, 237); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid rgb(8, 191, 41);">
+<strong style="color:rgb(1, 142, 32);"></strong>
+
+```yaml
+# ttZconfig.yaml
+
+regions:
+  - name: TREx4l1b
+    selection: (region_name_NOSYS != std::string("other") && n_bjets_NOSYS == 1 && n_jets_NOSYS >= 2)
+    variables: *1b_varibles
+
+  - name: TREx4l2bp
+    selection: (region_name_NOSYS != std::string("other") && n_bjets_NOSYS >= 2 && n_jets_NOSYS >= 2)
+    variables: *2b_varibles
+```
+</div>
+
+<div style="background-color:rgb(255, 230, 254); border: 1px solid rgb(135, 33, 243); padding: 15px; border-radius: 5px; margin: 10px 0;">
+<h4 style="color:rgb(112, 13, 161); margin-top: 0;">Note:</h4>
+
+We cannot use many of the previously created regions with <code>TRExFitter</code> because their names start with a number, this is not supported. In part, we create the previous regions because of this and also to increase the number of events in the plots.
+</div>
+
 
 To create a configuration that can be run from `TRExFitter` we use the `produce_trexfitter_config.py` script. In this tutorial we will use the following parameters for the script:
 - `-c` FastFrames configuration file.

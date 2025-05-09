@@ -51,16 +51,13 @@ Regions: # This block helps to overwrite options in specifc regions.
     Rebin: 10 # or this.
   - name: TREx4l.*bjet0_pt.*
     Type: "VALIDATION"
-    Rebin: 10
   - name: TREx4l.*bjet1_pt.*
     Type: "VALIDATION"
-    Rebin: 10
   - name: TREx4l.*met_met.*
     Type: "VALIDATION"
-    Rebin: 12
+    VariableTitle: "E_{T}^{miss} [GeV]" # or this.
   - name: TREx4l.*ttbar_mass.*
     Type: "VALIDATION"
-    Rebin: 20
 
 Systematics:
     - name: "Luminosity"
