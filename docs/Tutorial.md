@@ -62,7 +62,7 @@ Setup the environment and download the code:
 
 ```bash
 # Clone the tutorial repository Create a directory to store your work
-git clone --branch first-part ssh://git@gitlab.cern.ch:7999/dbaronmo/fftutorialtopws2025.git FFTutorial --recurse-submodules
+git clone --branch part-one ssh://git@gitlab.cern.ch:7999/dbaronmo/fftutorialtopws2025.git FFTutorial --recurse-submodules
 cd FFTutorial
 
 
