@@ -1,0 +1,234 @@
+general:
+  debug_level: DEBUG # Logger level
+  input_filelist_path: "../metadata/filelist.txt" # Path to the metadata relative to fastframes directory
+  input_sumweights_path: "../metadata/sum_of_weights.txt" # Path to the metadata relative to fastframes directory
+  output_path_histograms: "../output_histograms/" # Path to the output histograms relative to fastframes directory
+  output_path_ntuples: "../output_ntuples/" # Path to the output ntuples relative to fastframes directory
+  default_sumweights: "NOSYS" # Default sum of weights for the samples. This is used to calculate the scaling to the luminosity.
+  default_event_weights: "weight_mc_NOSYS  * weight_mc_fcal * weight_leptonSF_tight_NOSYS" # Default event weights for the samples. This is used to calculate the scaling to the luminosity.
+  default_reco_tree_name: "reco" # Name of the reco tree in the input files.
+  xsection_files: # Location of the cross-section, k-factor, filter-efficiency medatada split per campaign.
+    - files: ["/home/danbiajujumiguel/workspace/FFAnalysis/PMGxsecDB_mc23.txt"]
+      campaigns: ["mc23d"]
+  luminosity: # Luminosity for the campaigns
+    mc23d: 0.00163  #  
+  automatic_systematics: False
+  nominal_only: True # Run with/without systematics.
+  config_define_after_custom_class : True
+  define_custom_columns: # You can define new variables here. Use valid C++ syntax.
+    - name: "nJetsR4_NOSYS"
+      definition: "jetR4_pt_NOSYS[jetR4_pt_NOSYS >= 15000 && jetR4_select_tight_NOSYS==true].size()"
+    - name: "jetR4_sort_idx_NOSYS"
+      definition: "ROOT::VecOps::Argsort(-jetR4_pt_NOSYS[jetR4_select_tight_NOSYS])"
+    - name: "jetR4_pt_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(jetR4_pt_NOSYS[jetR4_select_tight_NOSYS], jetR4_sort_idx_NOSYS)"
+    - name: "jetR4_eta_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(jetR4_eta[jetR4_select_tight_NOSYS], jetR4_sort_idx_NOSYS)"
+    - name: "jetR4_phi_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(jetR4_phi[jetR4_select_tight_NOSYS], jetR4_sort_idx_NOSYS)"
+    - name: "jetR4_e_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(jetR4_e_NOSYS[jetR4_select_tight_NOSYS], jetR4_sort_idx_NOSYS)"
+    - name: "jetR4_tlv0_NOSYS"
+      definition: "ROOT::Math::PtEtaPhiEVector(jetR4_pt_sorted_NOSYS[0], jetR4_eta_sorted_NOSYS[0], jetR4_phi_sorted_NOSYS[0], jetR4_e_sorted_NOSYS[0])"
+    - name: "jetR4_tlv1_NOSYS"
+      definition: "ROOT::Math::PtEtaPhiEVector(jetR4_pt_sorted_NOSYS[1], jetR4_eta_sorted_NOSYS[1], jetR4_phi_sorted_NOSYS[1], jetR4_e_sorted_NOSYS[1])"
+    - name: "nMuons_NOSYS"
+      definition: "mu_pt_NOSYS[mu_pt_NOSYS >= 15000 && mu_select_tight_NOSYS==true].size()"
+    - name: "mu_sort_idx_NOSYS"
+      definition: "ROOT::VecOps::Argsort(-mu_pt_NOSYS[mu_select_tight_NOSYS])"
+    - name: "mu_pt_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(mu_pt_NOSYS[mu_select_tight_NOSYS], mu_sort_idx_NOSYS)"
+    - name: "mu_eta_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(mu_eta[mu_select_tight_NOSYS], mu_sort_idx_NOSYS)"
+    - name: "mu_phi_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(mu_phi[mu_select_tight_NOSYS], mu_sort_idx_NOSYS)"
+    - name: "mu_e_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(mu_e_NOSYS[mu_select_tight_NOSYS], mu_sort_idx_NOSYS)"
+    - name: "mu_charge_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(mu_charge[mu_select_tight_NOSYS], mu_sort_idx_NOSYS)"
+    - name: "mu_pt2cone20_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(mu_pt2cone20[mu_select_tight_NOSYS], mu_sort_idx_NOSYS)"
+    - name: "mu_topoetcone20_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(mu_topoetcone20[mu_select_tight_NOSYS], mu_sort_idx_NOSYS)"
+    - name: "mu_tlv0_NOSYS"
+      definition: "ROOT::Math::PtEtaPhiEVector(mu_pt_sorted_NOSYS[0], mu_eta_sorted_NOSYS[0], mu_phi_sorted_NOSYS[0], mu_e_sorted_NOSYS[0])"
+    - name: "mu_tlv1_NOSYS"
+      definition: "ROOT::Math::PtEtaPhiEVector(mu_pt_sorted_NOSYS[1], mu_eta_sorted_NOSYS[1], mu_phi_sorted_NOSYS[1], mu_e_sorted_NOSYS[1])"
+  # create_tlorentz_vectors_for: ["mu"] # desabilitado: mu_tlv_NOSYS definido manualmente acima
+  use_rvec: False # Use ROOT::RVec instead of std::vector.
+  number_of_cpus: 4 # CPU cores to use for the analysis.
+  use_region_subfolders: False # Save the histograms in subfolders per region.  it was true
+
+
+regions: # All the regions (defined by a selection criteria) to be used in the analysis.
+  - name: all_tight_muon # This postfix will be appended to every variable.
+    selection: "pass_mumu_NOSYS == 1" # Selection string, needs to be valid C++ syntax.
+    variables: &common_muons  # Here you list the variables. Note the usage of the anchor (&). This allows you to reuse the same variables in other regions.
+      - name: mu_pt1 # Name of the variable. This will result in 'mu_pt_all_tight_muon'.
+        title: "Muon p_{T}(1) [GeV]; p_{T} [MeV]; Events"
+        definition: "mu_tlv0_NOSYS.Pt()"
+        binning:
+          min: 0
+          max: 100000
+          number_of_bins: 20
+      - name: mu_eta1
+        title: "Muon eta(1); mu_eta; Events"
+        definition: "mu_tlv0_NOSYS.Eta()"
+        binning:
+          min: -3.0
+          max: 3.0
+          number_of_bins: 60   
+      - name: mu_pt2
+        title: "Muon p_{T}(2) [GeV]; p_{T} [MeV]; Events"
+        definition: "mu_tlv1_NOSYS.Pt()"
+        binning:
+          min: 0
+          max: 100000
+          number_of_bins: 20
+      - name: mu_eta2
+        title: "Muon eta(2); mu_eta; Events"
+        definition: "mu_tlv1_NOSYS.Eta()"
+        binning:
+          min: -3.0
+          max: 3.0
+          number_of_bins: 60    
+      - name: "n_muons"
+        type: "unsigned long"
+        title : "Number of Muons ; nMuons ; Events"
+        definition: "nMuons_NOSYS"
+        binning:
+          min: -0.5
+          max: 7.5
+          number_of_bins: 8
+      - name: "mu_charge"
+        title: "Muon charge; mu_charge; Events"
+        definition: "mu_charge"
+        binning:
+          min: -2.0
+          max: 2.0
+          number_of_bins: 4
+      - name: "m_mumu"
+        title: "m_{#mu#mu} [GeV]; m_{#mu#mu} [GeV]; Events"
+        definition: (mu_tlv0_NOSYS+mu_tlv1_NOSYS).M()
+        binning:
+          min: 50000
+          max: 120000
+          number_of_bins: 100
+      - name: "ratio_pt2cone20_mu1"
+        title: "p_{T}^{cone20}/p_{T}; p_{T}^{cone20}/p_{T}; Events"
+        definition: "mu_pt2cone20_sorted_NOSYS[0]/mu_pt_sorted_NOSYS[0]"
+        binning:
+          min: 0
+          max: 1
+          number_of_bins: 50
+      - name: "ratio_pt2cone20_mu2"
+        title: "p_{T}^{cone20}/p_{T}; p_{T}^{cone20}/p_{T}; Events"
+        definition: "mu_pt2cone20_sorted_NOSYS[1]/mu_pt_sorted_NOSYS[1]"
+        binning:
+          min: 0
+          max: 1
+          number_of_bins: 50    
+      - name: "ratio_topoetcone20_mu1"
+        title: "topoetcone20/p_{T}; topoetcone20/p_{T}; Events"
+        definition: "mu_topoetcone20_sorted_NOSYS[0]/mu_pt_sorted_NOSYS[0]"
+        binning:
+          min: 0
+          max: 1
+          number_of_bins: 50
+      - name: "ratio_topoetcone20_mu2"
+        title: "topoetcone20/p_{T}; topoetcone20/p_{T}; Events"
+        definition: "mu_topoetcone20_sorted_NOSYS[1]/mu_pt_sorted_NOSYS[1]"
+        binning:
+          min: 0
+          max: 1
+          number_of_bins: 50
+      - name: "mu1_pt2cone20"
+        title: "p_{T}^{cone20} [GeV]; p_{T}^{cone20} [GeV]; Events"
+        definition: "mu_pt2cone20_sorted_NOSYS[0]"
+        binning:
+          min: 0
+          max: 20000
+          number_of_bins: 20
+      - name: "mu2_pt2cone20"
+        title: "p_{T}^{cone20} [GeV]; p_{T}^{cone20} [GeV]; Events"
+        definition: "mu_pt2cone20_sorted_NOSYS[1]"
+        binning:
+          min: 0
+          max: 20000
+          number_of_bins: 20
+      - name: "sumET"
+        type: "float"
+        title: "FCAL sum ET; FCAL-SumET; Events"   
+        definition: fcal_sum_et
+        binning: 
+          min: 0   
+          max: 6   
+          number_of_bins: 60
+      - name: "nJetsR4"
+        type: "unsigned long"
+        title : "Number of R=0.4 Jets ; nJetsR4 ; Events"
+        definition: "nJetsR4_NOSYS"
+        binning:
+          min: -0.5
+          max: 7.5
+          number_of_bins: 8
+      - name: "pTJet1R4"
+        title: "p_{T} of R=0.4 Jet 1 [GeV]; p_{T} [MeV]; Events"
+        definition: "jetR4_pt_sorted_NOSYS[0]"
+        binning:
+          min: 0
+          max: 100000
+          number_of_bins: 20
+      - name: "pTJet2R4"
+        title: "p_{T} of R=0.4 Jet 2 [GeV]; p_{T} [MeV]; Events"
+        definition: "jetR4_pt_sorted_NOSYS[1]"
+        binning:
+          min: 0
+          max: 100000
+          number_of_bins: 20
+      - name: "etaJet1R4"
+        title: "Eta of R=0.4 Jet 1 [GeV]; p_{T} [MeV]; Events"
+        definition: "jetR4_eta_sorted_NOSYS[0]"
+        binning:
+          min: -2.4
+          max: 2.4
+          number_of_bins: 20
+      - name: "etaJet2R4"
+        title: "Eta of R=0.4 Jet 2 [GeV]; p_{T} [MeV]; Events"
+        definition: "jetR4_eta_sorted_NOSYS[1]"
+        binning:
+          min: -2.4
+          max: 2.4
+          number_of_bins: 20
+
+
+  - name: "TREXET_2MU_CENTRAL_0_80"
+    selection: "pass_mumu_NOSYS == 1 && nMuons_NOSYS == 2 && fcal_sum_et > 0.063208 && abs(mu_eta_sorted_NOSYS[0]) < 2.47 && abs(mu_eta_sorted_NOSYS[1]) < 2.47 && mu_charge_sorted_NOSYS[0] * mu_charge_sorted_NOSYS[1] < 0 && mu_pt2cone20_sorted_NOSYS[0]/mu_pt_sorted_NOSYS[0] < 0.32 && mu_pt2cone20_sorted_NOSYS[1]/mu_pt_sorted_NOSYS[1] < 0.32 && mu_topoetcone20_sorted_NOSYS[0]/mu_pt_sorted_NOSYS[0] < 0.5 && mu_topoetcone20_sorted_NOSYS[1]/mu_pt_sorted_NOSYS[1] < 0.5 && pass_ee_NOSYS == 0 && pass_emu_NOSYS == 0"
+    variables: *common_muons # Reuse the common variables defined above.
+
+ntuples: # Use this block to define the ntuples to be created.
+  regions: # Only events passing the selection of one of the regions will be saved in the ntuple.
+    - TREXET_2MU_CENTRAL_0_80  
+  #selection: "nJets_NOSYS == 3" # You can alternatively define a selection for the ntuples.
+  branches: # These branches will be saved in the ntuple.
+    - .*_pt_NOSYS # You can use regular expressions. This will select e, mu and jet pt.
+    - mu_eta
+    - mu_phi
+
+samples: # All the samples to be used in the analysis. mudo aqui depois para diff mu e electrons
+  - name: "data" # Name given to the sample.
+    dsids: [0] # For data, this is always 0.
+    campaigns: ["2024"] # The corresponding campaing or campaigns.
+    simulation_type: "data" # Type of simulation.
+
+  - name: "ttHijing" # Another sample.
+    dsids: [601589] # List of DSIDs for the sample.
+    campaigns: ["mc23d"]
+    simulation_type: "fullsim" # For MC samples we have a different simulation type.
+
+  - name: "zmumu" # Another sample.
+    dsids: [600646] # List of DSIDs for the sample.
+    campaigns: ["mc23d"]
+    simulation_type: "fullsim" # For MC samples we have a different simulation type.
+
+

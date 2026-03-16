@@ -1,0 +1,389 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{array}
+\usepackage{multirow}
+
+\geometry{margin=2.5cm}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{gray!10},
+    frame=single,
+    breaklines=true,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red!70!black},
+}
+
+\title{\textbf{Di-Muon Analysis Documentation in Heavy-Ion Collisions}\\
+\large FastFrames Configuration --- \texttt{ttmumu.yaml}}
+\author{ATLAS Heavy-Ion Analysis}
+\date{March 2026}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+%=============================================================================
+\section{Overview}
+%=============================================================================
+
+This documentation describes the procedures, selection cuts, and variables
+used in the di-muon pair analysis in heavy-ion (Heavy-Ion) collisions
+with the ATLAS detector. The analysis uses the \textbf{FastFrames} framework based on
+\texttt{RDataFrame} from ROOT for vectorised processing of ntuples.
+
+The main goal is to produce histograms for spectrum fitting with
+TRex-Fitter, targeting the study of $Z \to \mu\mu$ production in Pb+Pb collisions.
+
+%=============================================================================
+\section{General Configuration}
+%=============================================================================
+
+\subsection{Run Parameters}
+
+\begin{table}[h!]
+\centering
+\caption{General configuration parameters.}
+\begin{tabular}{ll}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Debug level                    & \texttt{DEBUG} \\
+Reconstruction tree            & \texttt{reco} \\
+Number of CPUs                 & 4 \\
+Automatic systematics          & Disabled \\
+Nominal only                   & Yes \\
+Region subfolders              & No \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Luminosity and Campaign}
+
+The analysis uses data from the \textbf{mc23d} campaign, with integrated luminosity:
+
+\begin{equation}
+    \mathcal{L}_{\text{int}} = 0.00163\ \text{pb}^{-1} = 1630\ \mu\text{b}^{-1}
+\end{equation}
+
+\subsection{Event Weights}
+
+The default weight applied to each simulated event is:
+
+\begin{equation}
+    w_{\text{event}} = w_{\text{mc}} \times w_{\text{mc,FCal}} \times w_{\text{leptonSF,tight}}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $w_{\text{mc}}$ (\texttt{weight\_mc\_NOSYS}): Monte Carlo generation weight;
+    \item $w_{\text{mc,FCal}}$ (\texttt{weight\_mc\_fcal}): centrality reweighting via FCal;
+    \item $w_{\text{leptonSF,tight}}$ (\texttt{weight\_leptonSF\_tight\_NOSYS}): lepton efficiency scale factor (\textit{Tight} working point).
+\end{itemize}
+
+\subsection{Samples}
+
+\begin{table}[h!]
+\centering
+\caption{Samples used in the analysis.}
+\begin{tabular}{llll}
+\toprule
+\textbf{Name} & \textbf{DSID} & \textbf{Campaign} & \textbf{Type} \\
+\midrule
+\texttt{data}     & 0      & 2024  & Real data \\
+\texttt{ttHijing} & 601589 & mc23d & Full Sim (MC) \\
+\texttt{zmumu}    & 600646 & mc23d & Full Sim (MC) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The cross-section file used is \texttt{PMGxsecDB\_mc23.txt},
+which contains the cross-section, $k$-factor, and filter efficiency for each MC sample.
+
+%=============================================================================
+\section{Derived Variable Definitions (\textit{Custom Columns})}
+%=============================================================================
+
+The variables below are computed at runtime via
+\texttt{RDataFrame::Define}, using valid C++ syntax. All momentum quantities
+are in \textbf{MeV}, following the ATLAS ntuple convention.
+
+\subsection{Muon Counting}
+
+\begin{equation}
+    n_{\mu}^{\text{tight}} = \left| \left\{ \mu_i : p_{T,i} \geq 15000\ \text{MeV}\ \wedge\ \texttt{mu\_select\_tight}_i = \text{true} \right\} \right|
+\end{equation}
+
+\noindent Implemented as:
+\begin{lstlisting}[language=C++]
+mu_pt_NOSYS[mu_pt_NOSYS >= 15000 && mu_select_tight_NOSYS == true].size()
+\end{lstlisting}
+
+\subsection{Muon Sorting by $p_T$}
+
+Tight muons are sorted in descending $p_T$ order using
+\texttt{ROOT::VecOps::Argsort}:
+
+\begin{lstlisting}[language=C++]
+// Sorting index (descending):
+ROOT::VecOps::Argsort(-mu_pt_NOSYS[mu_select_tight_NOSYS])
+
+// Sorted variables (example for pT):
+ROOT::VecOps::Take(mu_pt_NOSYS[mu_select_tight_NOSYS], mu_sort_idx_NOSYS)
+\end{lstlisting}
+
+The following variables are created for pT-sorted muons:
+
+\begin{table}[h!]
+\centering
+\caption{Derived variables for muons sorted by $p_T$ (momentum in MeV; $\eta$, $\phi$, charge are dimensionless).}
+\begin{tabular}{ll}
+\toprule
+\textbf{Variable} & \textbf{Description} \\
+\midrule
+\texttt{mu\_pt\_sorted\_NOSYS}         & $p_T$ of sorted Tight muons \\
+\texttt{mu\_eta\_sorted\_NOSYS}        & $\eta$ of sorted Tight muons \\
+\texttt{mu\_phi\_sorted\_NOSYS}        & $\phi$ of sorted Tight muons \\
+\texttt{mu\_e\_sorted\_NOSYS}          & Energy of sorted Tight muons \\
+\texttt{mu\_charge\_sorted\_NOSYS}     & Electric charge of sorted Tight muons \\
+\texttt{mu\_pt2cone20\_sorted\_NOSYS}  & Track isolation $p_T^{\text{cone20}}$ (MeV), sorted \\
+\texttt{mu\_topoetcone20\_sorted\_NOSYS} & Calorimeter isolation $E_T^{\text{topocone20}}$ (MeV), sorted \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Muon Four-Vectors}
+
+The four-vectors of the two highest-$p_T$ muons are constructed using
+\texttt{ROOT::Math::PtEtaPhiEVector} ($(p_T, \eta, \phi, E)$ system):
+
+\begin{lstlisting}[language=C++]
+// Leading muon (index 0):
+ROOT::Math::PtEtaPhiEVector(mu_pt_sorted_NOSYS[0],
+                             mu_eta_sorted_NOSYS[0],
+                             mu_phi_sorted_NOSYS[0],
+                             mu_e_sorted_NOSYS[0])
+
+// Sub-leading muon (index 1):
+ROOT::Math::PtEtaPhiEVector(mu_pt_sorted_NOSYS[1],
+                             mu_eta_sorted_NOSYS[1],
+                             mu_phi_sorted_NOSYS[1],
+                             mu_e_sorted_NOSYS[1])
+\end{lstlisting}
+
+The invariant mass of the di-muon pair is computed as:
+
+\begin{equation}
+    m_{\mu\mu} = \left( P_{\mu_0} + P_{\mu_1} \right)^2, \quad
+    \text{via } \texttt{(mu\_tlv0\_NOSYS + mu\_tlv1\_NOSYS).M()}
+\end{equation}
+
+%=============================================================================
+\section{Selection Regions}
+%=============================================================================
+
+The analysis defines four regions, each with a specific event selection:
+
+%-----------------------------------------------------------------------------
+\subsection{Region \texttt{all\_tight\_muon} --- Diagnostic}
+%-----------------------------------------------------------------------------
+
+General control region used for diagnostics. Requires only the event
+selection flag and exactly two Tight muons.
+
+\begin{table}[h!]
+\centering
+\caption{Cuts for the \texttt{all\_tight\_muon} region.}
+\begin{tabular}{lll}
+\toprule
+\textbf{Variable} & \textbf{Cut} & \textbf{Description} \\
+\midrule
+\texttt{pass\_mumu\_NOSYS}                        & $= 1$     & Di-muon event selection flag \\
+$\sum_i \texttt{mu\_select\_tight}_i$             & $= 2$     & Exactly 2 Tight muons \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%-----------------------------------------------------------------------------
+\subsection{Region \texttt{sumET} --- Centrality Distribution}
+%-----------------------------------------------------------------------------
+
+No selection cut (accepts all events). Used to monitor the
+FCal transverse energy distribution, which characterises the collision
+centrality.
+
+\begin{equation}
+    \text{Selection: no cut (}\texttt{selection: "1"}\text{)}
+\end{equation}
+
+%-----------------------------------------------------------------------------
+\subsection{Region \texttt{TREXMU} --- Main Di-Muon Selection}
+%-----------------------------------------------------------------------------
+
+Main analysis region with a full di-muon selection for TRex-Fitter fitting.
+
+\begin{table}[h!]
+\centering
+\caption{Cuts for the \texttt{TREXMU} region (full di-muon selection).}
+\begin{tabular}{lll}
+\toprule
+\textbf{Variable} & \textbf{Cut} & \textbf{Description} \\
+\midrule
+\texttt{pass\_mumu\_NOSYS}                          & $= 1$              & Di-muon event selection flag \\
+$n_\mu^{\text{tight}}$                              & $= 2$              & Exactly 2 Tight muons with $p_T > 15$~GeV \\
+\texttt{fcal\_sum\_et}                              & $> 0.063208$~TeV   & FCal centrality cut ($< 80\%$) \\
+$|\eta_{\mu_0}|$                                    & $< 2.47$           & Pseudorapidity acceptance (leading) \\
+$|\eta_{\mu_1}|$                                    & $< 2.47$           & Pseudorapidity acceptance (sub-leading) \\
+$q_{\mu_0} \cdot q_{\mu_1}$                         & $< 0$              & Opposite-charge pair \\
+$p_{T,\mu_0}^{\text{cone20}} / p_{T,\mu_0}$        & $< 0.32$           & Track isolation (leading) \\
+$p_{T,\mu_1}^{\text{cone20}} / p_{T,\mu_1}$        & $< 0.32$           & Track isolation (sub-leading) \\
+$E_{T,\mu_0}^{\text{topocone20}} / p_{T,\mu_0}$    & $< 0.5$            & Calorimetric isolation (leading) \\
+$E_{T,\mu_1}^{\text{topocone20}} / p_{T,\mu_1}$    & $< 0.5$            & Calorimetric isolation (sub-leading) \\
+$\sum_i \texttt{el\_select\_tight}_i$               & $= 0$              & Tight electron veto \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection*{Notes on Isolation}
+
+Isolation cuts are applied as dimensionless ratios, with both numerator
+and denominator in MeV. For the leading muon ($\mu_0$):
+
+\begin{align}
+    \frac{p_T^{\text{cone20}}}{p_T} &< 0.32 \quad \text{(track isolation)} \\[6pt]
+    \frac{E_T^{\text{topocone20}}}{p_T} &< 0.5  \quad \text{(calorimetric isolation)}
+\end{align}
+
+\subsubsection*{Note on Centrality}
+
+The cut $E_T^{\text{FCal}} > 0.063208$~TeV corresponds to collisions with
+centrality $< 80\%$, selecting only collisions with significant geometric
+overlap between the nuclei.
+
+%-----------------------------------------------------------------------------
+\subsection{Region \texttt{TREXET\_2MU\_CENTRAL\_0\_80} --- Central Di-Muon}
+%-----------------------------------------------------------------------------
+
+Applies exactly the same cuts as the \texttt{TREXMU} region, but the
+histograms produced are the FCal $\Sigma E_T$ variables instead of muon
+variables. Used to study the centrality distribution within the di-muon selection.
+
+%=============================================================================
+\section{Produced Histograms}
+%=============================================================================
+
+\subsection{Common Variables (regions \texttt{all\_tight\_muon} and \texttt{TREXMU})}
+
+\begin{longtable}{llccc}
+\caption{Histogrammed variables in the muon regions.} \\
+\toprule
+\textbf{Name} & \textbf{Definition} & \textbf{Min} & \textbf{Max} & \textbf{Bins} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Name} & \textbf{Definition} & \textbf{Min} & \textbf{Max} & \textbf{Bins} \\
+\midrule
+\endhead
+\texttt{mu\_pt}           & \texttt{mu\_pt\_NOSYS} [MeV]                         & 0      & 200\,000 & 20  \\
+\texttt{mu\_eta}          & \texttt{mu\_eta}                                      & $-3.0$ & $3.0$    & 60  \\
+\texttt{n\_muons}         & \texttt{nMuons\_NOSYS}                                & $-0.5$ & $7.5$    & 8   \\
+\texttt{mu\_charge}       & \texttt{mu\_charge}                                   & $-2.0$ & $2.0$    & 4   \\
+\texttt{m\_mumu}          & $(P_{\mu_0}+P_{\mu_1}).\texttt{M()}$ [MeV]           & 50\,000 & 120\,000 & 100 \\
+\texttt{ratio\_pt2cone20} & $p_T^{\text{cone20}}[0] / p_T[0]$                    & 0      & 1        & 50  \\
+\texttt{ratio\_topoetcone20} & $E_T^{\text{topocone20}}[0] / p_T[0]$             & 0      & 1        & 50  \\
+\texttt{mu\_pt2cone20}    & \texttt{mu\_pt2cone20\_sorted\_NOSYS[0]} [MeV]        & 0      & 50       & 50  \\
+\bottomrule
+\end{longtable}
+
+\noindent\textbf{Note:} The $m_{\mu\mu}$ histogram range ($[50\,000,\ 120\,000]$ MeV)
+corresponds to the $Z$ boson mass window, approximately $[50,\ 120]$ GeV.
+
+\subsection{Centrality Variables (regions \texttt{sumET} and \texttt{TREXET\_2MU\_CENTRAL\_0\_80})}
+
+\begin{table}[h!]
+\centering
+\caption{Histogrammed variables in the transverse energy regions.}
+\begin{tabular}{llccc}
+\toprule
+\textbf{Name} & \textbf{Definition} & \textbf{Min} & \textbf{Max} & \textbf{Bins} \\
+\midrule
+\texttt{Fcal\_sum\_ET} & \texttt{fcal\_sum\_et} [TeV] & 0 & 6 & 60 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%=============================================================================
+\section{Output Ntuples}
+%=============================================================================
+
+In addition to histograms, filtered ntuples are produced for the
+\texttt{TREXMU} and \texttt{TREXET\_2MU\_CENTRAL\_0\_80} regions. The saved branches are:
+
+\begin{itemize}
+    \item \texttt{.*\_pt\_NOSYS} --- all $p_T$ branches (muons, electrons, jets);
+    \item \texttt{mu\_eta} --- muon pseudorapidity;
+    \item \texttt{mu\_phi} --- muon azimuthal angle.
+\end{itemize}
+
+%=============================================================================
+\section{Selection Flow}
+%=============================================================================
+
+The following steps summarise the event selection flow:
+
+\begin{enumerate}
+    \item \textbf{Pre-selection:} \texttt{pass\_mumu\_NOSYS == 1}
+    \item \textbf{Muon quality:} select muons passing the \textit{Tight} working point
+          with $p_T > 15$~GeV
+    \item \textbf{Sorting:} rank Tight muons by decreasing $p_T$
+    \item \textbf{Centrality:} $E_T^{\text{FCal}} > 0.063208$~TeV (centrality $< 80\%$)
+    \item \textbf{Multiplicity:} exactly $N_\mu^{\text{tight}} = 2$
+    \item \textbf{Acceptance:} $|\eta_{\mu_{0,1}}| < 2.47$
+    \item \textbf{Opposite charge:} $q_{\mu_0} \cdot q_{\mu_1} < 0$
+    \item \textbf{Track isolation:} $p_T^{\text{cone20}} / p_T < 0.32$ (both muons)
+    \item \textbf{Calorimetric isolation:} $E_T^{\text{topocone20}} / p_T < 0.5$ (both)
+    \item \textbf{Electron veto:} $N_e^{\text{tight}} = 0$
+\end{enumerate}
+
+%=============================================================================
+\section{Technical Notes}
+%=============================================================================
+
+\begin{itemize}
+    \item The trigger \texttt{HLT\_mu4\_L1MU3V} was identified as the only active trigger
+          in HI data. In MC, the trigger branch often does not exist;
+          therefore, the trigger cut is not applied in the selection (MC is $\sim$100\%
+          efficient for muons with $p_T > 15$~GeV).
+    \item All momenta in ATLAS HI ntuples are in \textbf{MeV}.
+    \item The four-vector construction uses \texttt{ROOT::Math::PtEtaPhiEVector}
+          with MeV inputs; the resulting invariant mass $m_{\mu\mu}$ is therefore
+          also in MeV.
+    \item The \texttt{nominal\_only: True} option disables systematic variation
+          processing, running only the nominal configuration.
+    \item The framework does not use \texttt{ROOT::RVec} directly
+          (\texttt{use\_rvec: False}); vectors are processed via
+          \texttt{ROOT::VecOps}.
+\end{itemize}
+
+\end{document}
