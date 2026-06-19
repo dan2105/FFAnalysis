@@ -297,3 +297,6 @@ samples:
     dsids: [600646] # List of DSIDs for the sample.
     campaigns: ["mc23e"]
     simulation_type: "fullsim" # For MC samples we have a different simulation type.
+
+
+###add more samples here if needed
