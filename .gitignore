@@ -11,3 +11,11 @@ output*/*
 # Ignore plots and TRex files
 Plots/*
 my_trex.config
+
+# Ignore large ROOT files and ROOT session files
+*.root
+*.root.*
+
+# Ignore Python cache
+__pycache__/
+*.pyc

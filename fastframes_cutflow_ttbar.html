@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FastFrames — Cutflow para análise ttbar inclusiva</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    background: #0d1117;
+    color: #e6edf3;
+    line-height: 1.7;
+    font-size: 15px;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .topbar {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 0.75rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 13px;
+    color: #8b949e;
+  }
+  .topbar .breadcrumb { display: flex; align-items: center; gap: 0.4rem; }
+  .topbar .sep { color: #30363d; }
+  .topbar .current { color: #e6edf3; font-weight: 500; }
+  .badge {
+    background: #1f4068;
+    color: #58a6ff;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    border: 1px solid #30363d;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    background: #161b22;
+    border-right: 1px solid #30363d;
+    padding: 1.5rem 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .sidebar-section {
+    margin-bottom: 1.5rem;
+  }
+  .sidebar-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8b949e;
+    padding: 0 1.25rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+  .sidebar-link {
+    display: block;
+    padding: 0.35rem 1.25rem;
+    color: #8b949e;
+    font-size: 13px;
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .sidebar-link:hover { color: #e6edf3; background: #1f2937; }
+  .sidebar-link.active {
+    color: #58a6ff;
+    border-left-color: #58a6ff;
+    background: rgba(88,166,255,0.07);
+  }
+
+  .content {
+    padding: 2.5rem 3rem 4rem;
+    max-width: 860px;
+  }
+
+  .page-header {
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid #21262d;
+    padding-bottom: 1.5rem;
+  }
+  .page-tag {
+    font-size: 11px;
+    color: #8b949e;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+  h1 { font-size: 26px; font-weight: 600; color: #e6edf3; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+  .page-desc { color: #8b949e; font-size: 14px; }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #e6edf3;
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #21262d;
+    letter-spacing: -0.01em;
+    scroll-margin-top: 1rem;
+  }
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #c9d1d9;
+    margin: 1.5rem 0 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  p { color: #c9d1d9; margin-bottom: 1rem; font-size: 14px; }
+  li { color: #c9d1d9; font-size: 14px; margin-bottom: 0.3rem; }
+
+  .callout {
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    margin: 1.25rem 0;
+    font-size: 13px;
+    border-left: 3px solid;
+    display: flex;
+    gap: 0.75rem;
+  }
+  .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .callout.info { background: rgba(31,96,128,0.18); border-color: #388bfd; color: #a5c8f5; }
+  .callout.tip  { background: rgba(31,111,68,0.18); border-color: #3fb950; color: #85d99b; }
+  .callout.warn { background: rgba(187,128,9,0.18); border-color: #d29922; color: #e3b341; }
+  .callout strong { color: inherit; font-weight: 600; }
+
+  pre {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 1.1rem 1.25rem;
+    overflow-x: auto;
+    margin: 0.75rem 0 1.25rem;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  }
+  p code, li code {
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 12px;
+    color: #e6edf3;
+  }
+
+  .kw   { color: #ff7b72; }  /* keyword / yaml key */
+  .str  { color: #a5d6ff; }  /* string value */
+  .num  { color: #f2cc60; }  /* number */
+  .cmt  { color: #8b949e; font-style: italic; }  /* comment */
+  .op   { color: #d2a8ff; }  /* operator */
+  .var  { color: #ffa657; }  /* variable / name */
+  .bool { color: #79c0ff; }  /* bool */
+
+  .cutflow-visual {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin: 1rem 0 1.5rem;
+    overflow-x: auto;
+  }
+  .cut-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .cut-bar-wrap { flex: 1; background: #21262d; border-radius: 4px; height: 22px; overflow: hidden; }
+  .cut-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 11px; font-weight: 600; color: #0d1117; white-space: nowrap; }
+  .cut-label { width: 240px; flex-shrink: 0; color: #8b949e; font-size: 12px; }
+  .cut-count { width: 70px; text-align: right; color: #e6edf3; font-size: 12px; font-weight: 500; }
+  .cut-pct { width: 46px; text-align: right; color: #8b949e; font-size: 11px; }
+
+  .steps {
+    counter-reset: step;
+    margin: 1rem 0;
+  }
+  .step {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 0 1rem;
+    margin-bottom: 1.5rem;
+    align-items: start;
+  }
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #1f4068;
+    border: 1px solid #388bfd;
+    color: #58a6ff;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-body h3 { margin-top: 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 1rem 0 1.5rem;
+  }
+  th {
+    background: #161b22;
+    color: #8b949e;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #30363d;
+  }
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #21262d;
+    color: #c9d1d9;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td code { font-size: 12px; }
+
+  .toc {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 2rem;
+    font-size: 13px;
+  }
+  .toc-title { color: #8b949e; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; margin-bottom: 0.6rem; }
+  .toc ol { padding-left: 1.1rem; }
+  .toc li { margin-bottom: 0.2rem; }
+  .toc a { color: #58a6ff; }
+
+  .divider { border: none; border-top: 1px solid #21262d; margin: 2rem 0; }
+  footer { color: #8b949e; font-size: 12px; margin-top: 3rem; border-top: 1px solid #21262d; padding-top: 1rem; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="breadcrumb">
+    <span>FastFrames</span>
+    <span class="sep">›</span>
+    <span>ttbar Inclusive Analysis</span>
+    <span class="sep">›</span>
+    <span class="current">Cutflow</span>
+  </div>
+  <span class="badge">Tutorial</span>
+  <span class="badge">ATLAS</span>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Introdução</div>
+      <a class="sidebar-link" href="#overview">O que é um cutflow?</a>
+      <a class="sidebar-link" href="#ff-approach">Abordagem no FastFrames</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Configuração</div>
+      <a class="sidebar-link active" href="#variables">1. Definir variáveis</a>
+      <a class="sidebar-link" href="#regions">2. Criar regiões</a>
+      <a class="sidebar-link" href="#block">3. Bloco cutflows</a>
+      <a class="sidebar-link" href="#full-config">Config completo</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Output</div>
+      <a class="sidebar-link" href="#output">Arquivo ROOT</a>
+      <a class="sidebar-link" href="#read">Ler o cutflow</a>
+      <a class="sidebar-link" href="#tips">Dicas práticas</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Referência</div>
+      <a class="sidebar-link" href="#table">Parâmetros YAML</a>
+    </div>
+  </nav>
+
+  <main class="content">
+    <div class="page-header">
+      <div class="page-tag">FastFrames — ttbar Inclusive Analysis</div>
+      <h1>Como fazer um cutflow</h1>
+      <p class="page-desc">Guia passo a passo para implementar um cutflow de seleção de eventos no FastFrames usando YAML.</p>
+    </div>
+
+    <div class="toc">
+      <div class="toc-title">Nesta página</div>
+      <ol>
+        <li><a href="#overview">O que é um cutflow?</a></li>
+        <li><a href="#ff-approach">Abordagem no FastFrames</a></li>
+        <li><a href="#variables">Passo 1 — Definir variáveis</a></li>
+        <li><a href="#regions">Passo 2 — Criar regiões cumulativas</a></li>
+        <li><a href="#block">Passo 3 — Bloco cutflows (alternativo)</a></li>
+        <li><a href="#full-config">Config YAML completo</a></li>
+        <li><a href="#output">Lendo o output ROOT</a></li>
+        <li><a href="#tips">Dicas práticas</a></li>
+        <li><a href="#table">Referência de parâmetros</a></li>
+      </ol>
+    </div>
+
+    <!-- ──────────────────────────────── OVERVIEW -->
+    <h2 id="overview">O que é um cutflow?</h2>
+    <p>
+      Um cutflow rastreia quantos eventos sobrevivem a cada corte de seleção aplicado sequencialmente.
+      É uma das primeiras coisas que se verifica ao validar uma análise: cada linha do cutflow mostra
+      a eficiência de um critério e como a composição da amostra evolui conforme os cortes são apertados.
+    </p>
+
+    <div class="cutflow-visual">
+      <div style="font-size:11px;color:#8b949e;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;">Exemplo — e+jets ttbar (valores ilustrativos)</div>
+      <div class="cut-step">
+        <div class="cut-label">Todos os eventos</div>
+        <div class="cut-bar-wrap"><div class="cut-bar" style="width:100%;background:#388bfd;">100%</div></div>
+        <div class="cut-count">1 000 000</div>
+        <div class="cut-pct">100%</div>
+      </div>
+      <div class="cut-step">
+        <div class="cut-label">≥ 1 elétron tight</div>
+        <div class="cut-bar-wrap"><div class="cut-bar" style="width:72%;background:#3fb950;">72%</div></div>
+        <div class="cut-count">720 000</div>
+        <div class="cut-pct">72%</div>
+      </div>
+      <div class="cut-step">
+        <div class="cut-label">= 4 jets bons</div>
+        <div class="cut-bar-wrap"><div class="cut-bar" style="width:38%;background:#d29922;">38%</div></div>
+        <div class="cut-count">380 000</div>
+        <div class="cut-pct">38%</div>
+      </div>
+      <div class="cut-step">
+        <div class="cut-label">pT(j1) > 50 GeV</div>
+        <div class="cut-bar-wrap"><div class="cut-bar" style="width:24%;background:#ff7b72;">24%</div></div>
+        <div class="cut-count">240 000</div>
+        <div class="cut-pct">24%</div>
+      </div>
+      <div class="cut-step">
+        <div class="cut-label">pT(e) > 40 GeV</div>
+        <div class="cut-bar-wrap"><div class="cut-bar" style="width:17%;background:#a371f7;">17%</div></div>
+        <div class="cut-count">170 000</div>
+        <div class="cut-pct">17%</div>
+      </div>
+    </div>
+
+    <!-- ──────────────────────────────── ABORDAGEM FF -->
+    <h2 id="ff-approach">Abordagem no FastFrames</h2>
+    <p>
+      No FastFrames <strong>não existe um bloco "cutflow" nativo da mesma forma que em ferramentas como AnalysisTop</strong>.
+      Existem duas maneiras complementares de implementar um cutflow:
+    </p>
+    <ol style="padding-left:1.4rem;margin-bottom:1rem;">
+      <li style="margin-bottom:.5rem;"><strong>Via regiões cumulativas</strong> — cria-se uma <code>Region</code> para cada etapa, adicionando um corte a mais a cada nova região. O histograma de <em>event count</em> em cada região forma o cutflow.</li>
+      <li><strong>Via bloco <code>cutflows</code></strong> — o FastFrames aceita um bloco explícito de cutflows no YAML que automatiza essa construção (disponível em versões mais recentes).</li>
+    </ol>
+
+    <div class="callout info">
+      <span class="callout-icon">ℹ</span>
+      <div>
+        <strong>Seleção-alvo deste tutorial:</strong> canal e+jets do ttbar inclusivo —
+        exatamente 1 elétron tight, exatamente 4 jets bons, pT do jet líder &gt; 50 GeV, pT do elétron &gt; 40 GeV.
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ──────────────────────────────── PASSO 1 -->
+    <h2 id="variables">Passo 1 — Definir as variáveis</h2>
+    <p>
+      Antes de criar as regiões, declare todas as variáveis cinemáticas que deseja monitorar
+      ao longo do cutflow. No bloco <code>Variables</code> do config principal:
+    </p>
+<pre><code><span class="cmt"># config_ttbar.yaml</span>
+
+<span class="kw">Variables</span><span class="op">:</span>
+  <span class="cmt"># Multiplicidades</span>
+  - <span class="kw">Name</span><span class="op">:</span> <span class="var">nElectrons</span>
+    <span class="kw">Definition</span><span class="op">:</span> <span class="str">"nElectrons_tight_NOSYS"</span>
+    <span class="kw">Title</span><span class="op">:</span> <span class="str">"Number of tight electrons"</span>
+    <span class="kw">Binning</span><span class="op">:</span> [<span class="num">0</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>]
+
+  - <span class="kw">Name</span><span class="op">:</span> <span class="var">nJets</span>
+    <span class="kw">Definition</span><span class="op">:</span> <span class="str">"nJets_good_NOSYS"</span>
+    <span class="kw">Title</span><span class="op">:</span> <span class="str">"Number of good jets"</span>
+    <span class="kw">Binning</span><span class="op">:</span> [<span class="num">0</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>]
+
+  <span class="cmt"># Cinemática dos jets</span>
+  - <span class="kw">Name</span><span class="op">:</span> <span class="var">jet1_pt</span>
+    <span class="kw">Definition</span><span class="op">:</span> <span class="str">"jet_pt_NOSYS[0] / 1000."</span>
+    <span class="kw">Title</span><span class="op">:</span> <span class="str">"Leading jet p_{T} [GeV]"</span>
+    <span class="kw">Binning</span><span class="op">:</span> {<span class="kw">Edges</span><span class="op">:</span> [<span class="num">25</span>, <span class="num">50</span>, <span class="num">75</span>, <span class="num">100</span>, <span class="num">150</span>, <span class="num">200</span>, <span class="num">300</span>]}
+
+  - <span class="kw">Name</span><span class="op">:</span> <span class="var">jet2_pt</span>
+    <span class="kw">Definition</span><span class="op">:</span> <span class="str">"jet_pt_NOSYS[1] / 1000."</span>
+    <span class="kw">Title</span><span class="op">:</span> <span class="str">"Sub-leading jet p_{T} [GeV]"</span>
+    <span class="kw">Binning</span><span class="op">:</span> {<span class="kw">Edges</span><span class="op">:</span> [<span class="num">25</span>, <span class="num">50</span>, <span class="num">75</span>, <span class="num">100</span>, <span class="num">150</span>, <span class="num">200</span>]}
+
+  <span class="cmt"># Cinemática do elétron</span>
+  - <span class="kw">Name</span><span class="op">:</span> <span class="var">el_pt</span>
+    <span class="kw">Definition</span><span class="op">:</span> <span class="str">"el_pt_NOSYS[0] / 1000."</span>
+    <span class="kw">Title</span><span class="op">:</span> <span class="str">"Electron p_{T} [GeV]"</span>
+    <span class="kw">Binning</span><span class="op">:</span> {<span class="kw">Edges</span><span class="op">:</span> [<span class="num">25</span>, <span class="num">40</span>, <span class="num">60</span>, <span class="num">80</span>, <span class="num">120</span>, <span class="num">200</span>]}
+
+  - <span class="kw">Name</span><span class="op">:</span> <span class="var">el_eta</span>
+    <span class="kw">Definition</span><span class="op">:</span> <span class="str">"el_eta_NOSYS[0]"</span>
+    <span class="kw">Title</span><span class="op">:</span> <span class="str">"Electron #eta"</span>
+    <span class="kw">Binning</span><span class="op">:</span> {<span class="kw">Edges</span><span class="op">:</span> [<span class="num">-2.5</span>, <span class="num">-2.0</span>, <span class="num">-1.0</span>, <span class="num">0</span>, <span class="num">1.0</span>, <span class="num">2.0</span>, <span class="num">2.5</span>]}
+</code></pre>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠</span>
+      <div>
+        As variáveis <code>jet_pt_NOSYS[0]</code> requerem que o jet líder exista. Certifique-se de que
+        a seleção da região já garante <code>nJets_good_NOSYS &gt;= 1</code> antes de acessar o índice 0.
+        Use <code>nJets_good_NOSYS &gt;= 2</code> antes de <code>[1]</code>, e assim por diante.
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ──────────────────────────────── PASSO 2 -->
+    <h2 id="regions">Passo 2 — Criar regiões cumulativas</h2>
+    <p>
+      Cada região no FastFrames é definida com uma seleção booleana (<code>Selection</code>).
+      Para montar um cutflow, cria-se <em>uma região por etapa</em>, acumulando os cortes
+      anteriores em cada nova região.
+    </p>
+
+    <div class="callout tip">
+      <span class="callout-icon">✓</span>
+      <div>
+        <strong>Convenção de nomenclatura:</strong> use nomes do tipo <code>CF_Pass_X_Pass_Y</code>
+        (CF = CutFlow) para identificar facilmente a sequência de cortes ao abrir o ROOT file.
+      </div>
+    </div>
+
+<pre><code><span class="kw">Regions</span><span class="op">:</span>
+
+  <span class="cmt"># ── Etapa 1: exatamente 1 elétron tight ──────────────</span>
+  - <span class="kw">Name</span><span class="op">:</span>      <span class="var">CF_Pass_Ne</span>
+    <span class="kw">Selection</span><span class="op">:</span> <span class="str">"nElectrons_tight_NOSYS == 1"</span>
+    <span class="kw">Variables</span><span class="op">:</span>
+      - <span class="var">nElectrons</span>
+      - <span class="var">nJets</span>
+      - <span class="var">el_pt</span>
+      - <span class="var">el_eta</span>
+
+  <span class="cmt"># ── Etapa 2: + exatamente 4 jets bons ────────────────</span>
+  - <span class="kw">Name</span><span class="op">:</span>      <span class="var">CF_Pass_Ne_Pass_Nj</span>
+    <span class="kw">Selection</span><span class="op">:</span> <span class="str">"nElectrons_tight_NOSYS == 1 &amp;&amp; nJets_good_NOSYS == 4"</span>
+    <span class="kw">Variables</span><span class="op">:</span>
+      - <span class="var">nElectrons</span>
+      - <span class="var">nJets</span>
+      - <span class="var">jet1_pt</span>
+      - <span class="var">jet2_pt</span>
+      - <span class="var">el_pt</span>
+      - <span class="var">el_eta</span>
+
+  <span class="cmt"># ── Etapa 3: + pT(j1) > 50 GeV ──────────────────────</span>
+  - <span class="kw">Name</span><span class="op">:</span>      <span class="var">CF_Pass_Ne_Pass_Nj_Pass_j1pt</span>
+    <span class="kw">Selection</span><span class="op">:</span> <span class="str">"nElectrons_tight_NOSYS == 1 &amp;&amp;</span>
+<span class="str">                nJets_good_NOSYS == 4 &amp;&amp;</span>
+<span class="str">                jet_pt_NOSYS[0]/1000. > 50"</span>
+    <span class="kw">Variables</span><span class="op">:</span>
+      - <span class="var">nElectrons</span>
+      - <span class="var">nJets</span>
+      - <span class="var">jet1_pt</span>
+      - <span class="var">jet2_pt</span>
+      - <span class="var">el_pt</span>
+      - <span class="var">el_eta</span>
+
+  <span class="cmt"># ── Etapa 4: + pT(e) > 40 GeV  (seleção final) ──────</span>
+  - <span class="kw">Name</span><span class="op">:</span>      <span class="var">CF_Pass_Ne_Pass_Nj_Pass_j1pt_Pass_ept</span>
+    <span class="kw">Selection</span><span class="op">:</span> <span class="str">"nElectrons_tight_NOSYS == 1 &amp;&amp;</span>
+<span class="str">                nJets_good_NOSYS == 4 &amp;&amp;</span>
+<span class="str">                jet_pt_NOSYS[0]/1000. > 50 &amp;&amp;</span>
+<span class="str">                el_pt_NOSYS[0]/1000. > 40"</span>
+    <span class="kw">Variables</span><span class="op">:</span>
+      - <span class="var">nElectrons</span>
+      - <span class="var">nJets</span>
+      - <span class="var">jet1_pt</span>
+      - <span class="var">jet2_pt</span>
+      - <span class="var">el_pt</span>
+      - <span class="var">el_eta</span>
+</code></pre>
+
+    <hr class="divider">
+
+    <!-- ──────────────────────────────── PASSO 3 -->
+    <h2 id="block">Passo 3 — Bloco <code>cutflows</code> (alternativa compacta)</h2>
+    <p>
+      Em versões mais recentes do FastFrames, é possível usar o bloco dedicado <code>cutflows</code>
+      no YAML. Ele gera automaticamente as regiões cumulativas sem precisar repeti-las manualmente:
+    </p>
+
+<pre><code><span class="kw">cutflows</span><span class="op">:</span>
+  - <span class="kw">name</span><span class="op">:</span>   <span class="str">"ejets_ttbar"</span>
+    <span class="kw">cuts</span><span class="op">:</span>
+      - <span class="kw">name</span><span class="op">:</span>      <span class="str">"Pass_Ne"</span>
+        <span class="kw">selection</span><span class="op">:</span> <span class="str">"nElectrons_tight_NOSYS == 1"</span>
+      - <span class="kw">name</span><span class="op">:</span>      <span class="str">"Pass_Nj"</span>
+        <span class="kw">selection</span><span class="op">:</span> <span class="str">"nJets_good_NOSYS == 4"</span>
+      - <span class="kw">name</span><span class="op">:</span>      <span class="str">"Pass_j1pt"</span>
+        <span class="kw">selection</span><span class="op">:</span> <span class="str">"jet_pt_NOSYS[0]/1000. > 50"</span>
+      - <span class="kw">name</span><span class="op">:</span>      <span class="str">"Pass_ept"</span>
+        <span class="kw">selection</span><span class="op">:</span> <span class="str">"el_pt_NOSYS[0]/1000. > 40"</span>
+    <span class="kw">variables</span><span class="op">:</span>
+      - <span class="var">nElectrons</span>
+      - <span class="var">nJets</span>
+      - <span class="var">jet1_pt</span>
+      - <span class="var">jet2_pt</span>
+      - <span class="var">el_pt</span>
+      - <span class="var">el_eta</span>
+</code></pre>
+
+    <div class="callout info">
+      <span class="callout-icon">ℹ</span>
+      <div>
+        O bloco <code>cutflows</code> cria internamente regiões com nomes como
+        <code>ejets_ttbar_Pass_Ne</code>, <code>ejets_ttbar_Pass_Ne_Pass_Nj</code>, etc.
+        — exatamente o que foi feito manualmente no Passo 2.
+        Prefira esta forma quando a lista de cortes for longa.
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ──────────────────────────────── FULL CONFIG -->
+    <h2 id="full-config">Config YAML completo (método de regiões)</h2>
+
+<pre><code><span class="cmt"># ─────────────────────────────────────────────────────────
+# config_ttbar_cutflow.yaml
+# Cutflow e+jets para ttbar inclusivo — FastFrames
+# ─────────────────────────────────────────────────────────</span>
+
+<span class="kw">General</span><span class="op">:</span>
+  <span class="kw">OutputDir</span><span class="op">:</span>     <span class="str">"output_cutflow"</span>
+  <span class="kw">Lumi</span><span class="op">:</span>          <span class="num">140.1</span>
+  <span class="kw">NominalOnly</span><span class="op">:</span>   <span class="bool">true</span>   <span class="cmt"># para cutflow inicial sem systs</span>
+
+<span class="kw">Samples</span><span class="op">:</span>
+  - <span class="kw">Name</span><span class="op">:</span>   <span class="str">"ttbar"</span>
+    <span class="kw">Type</span><span class="op">:</span>   <span class="str">"MC"</span>
+    <span class="kw">DSIDs</span><span class="op">:</span>  [<span class="num">410470</span>, <span class="num">410471</span>]
+    <span class="kw">Weight</span><span class="op">:</span> <span class="str">"weight_mc_NOSYS * weight_pileup_NOSYS"</span>
+
+<span class="kw">Variables</span><span class="op">:</span>
+  - <span class="kw">Name</span><span class="op">:</span> <span class="var">nElectrons</span>
+    <span class="kw">Definition</span><span class="op">:</span> <span class="str">"nElectrons_tight_NOSYS"</span>
+    <span class="kw">Title</span><span class="op">:</span> <span class="str">"N tight electrons"</span>
+    <span class="kw">Binning</span><span class="op">:</span> [<span class="num">0</span>,<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>,<span class="num">4</span>,<span class="num">5</span>]
+
+  - <span class="kw">Name</span><span class="op">:</span> <span class="var">nJets</span>
+    <span class="kw">Definition</span><span class="op">:</span> <span class="str">"nJets_good_NOSYS"</span>
+    <span class="kw">Title</span><span class="op">:</span> <span class="str">"N good jets"</span>
+    <span class="kw">Binning</span><span class="op">:</span> [<span class="num">0</span>,<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>,<span class="num">4</span>,<span class="num">5</span>,<span class="num">6</span>]
+
+  - <span class="kw">Name</span><span class="op">:</span> <span class="var">jet1_pt</span>
+    <span class="kw">Definition</span><span class="op">:</span> <span class="str">"jet_pt_NOSYS[0] / 1000."</span>
+    <span class="kw">Title</span><span class="op">:</span> <span class="str">"Leading jet p_{T} [GeV]"</span>
+    <span class="kw">Binning</span><span class="op">:</span> {<span class="kw">Edges</span><span class="op">:</span> [<span class="num">25</span>,<span class="num">50</span>,<span class="num">75</span>,<span class="num">100</span>,<span class="num">150</span>,<span class="num">200</span>,<span class="num">300</span>]}
+
+  - <span class="kw">Name</span><span class="op">:</span> <span class="var">jet2_pt</span>
+    <span class="kw">Definition</span><span class="op">:</span> <span class="str">"jet_pt_NOSYS[1] / 1000."</span>
+    <span class="kw">Title</span><span class="op">:</span> <span class="str">"Sub-leading jet p_{T} [GeV]"</span>
+    <span class="kw">Binning</span><span class="op">:</span> {<span class="kw">Edges</span><span class="op">:</span> [<span class="num">25</span>,<span class="num">50</span>,<span class="num">75</span>,<span class="num">100</span>,<span class="num">150</span>,<span class="num">200</span>]}
+
+  - <span class="kw">Name</span><span class="op">:</span> <span class="var">el_pt</span>
+    <span class="kw">Definition</span><span class="op">:</span> <span class="str">"el_pt_NOSYS[0] / 1000."</span>
+    <span class="kw">Title</span><span class="op">:</span> <span class="str">"Electron p_{T} [GeV]"</span>
+    <span class="kw">Binning</span><span class="op">:</span> {<span class="kw">Edges</span><span class="op">:</span> [<span class="num">25</span>,<span class="num">40</span>,<span class="num">60</span>,<span class="num">80</span>,<span class="num">120</span>,<span class="num">200</span>]}
+
+  - <span class="kw">Name</span><span class="op">:</span> <span class="var">el_eta</span>
+    <span class="kw">Definition</span><span class="op">:</span> <span class="str">"el_eta_NOSYS[0]"</span>
+    <span class="kw">Title</span><span class="op">:</span> <span class="str">"Electron #eta"</span>
+    <span class="kw">Binning</span><span class="op">:</span> {<span class="kw">Edges</span><span class="op">:</span> [<span class="num">-2.5</span>,<span class="num">-2.0</span>,<span class="num">-1.0</span>,<span class="num">0</span>,<span class="num">1.0</span>,<span class="num">2.0</span>,<span class="num">2.5</span>]}
+
+<span class="kw">Regions</span><span class="op">:</span>
+  - <span class="kw">Name</span><span class="op">:</span>      <span class="var">CF_Pass_Ne</span>
+    <span class="kw">Selection</span><span class="op">:</span> <span class="str">"nElectrons_tight_NOSYS == 1"</span>
+    <span class="kw">Variables</span><span class="op">:</span> [<span class="var">nElectrons</span>, <span class="var">nJets</span>, <span class="var">el_pt</span>, <span class="var">el_eta</span>]
+
+  - <span class="kw">Name</span><span class="op">:</span>      <span class="var">CF_Pass_Ne_Pass_Nj</span>
+    <span class="kw">Selection</span><span class="op">:</span> <span class="str">"nElectrons_tight_NOSYS == 1 &amp;&amp; nJets_good_NOSYS == 4"</span>
+    <span class="kw">Variables</span><span class="op">:</span> [<span class="var">nElectrons</span>, <span class="var">nJets</span>, <span class="var">jet1_pt</span>, <span class="var">jet2_pt</span>, <span class="var">el_pt</span>, <span class="var">el_eta</span>]
+
+  - <span class="kw">Name</span><span class="op">:</span>      <span class="var">CF_Pass_Ne_Pass_Nj_Pass_j1pt</span>
+    <span class="kw">Selection</span><span class="op">:</span> <span class="str">"nElectrons_tight_NOSYS == 1 &amp;&amp; nJets_good_NOSYS == 4 &amp;&amp; jet_pt_NOSYS[0]/1000. > 50"</span>
+    <span class="kw">Variables</span><span class="op">:</span> [<span class="var">nElectrons</span>, <span class="var">nJets</span>, <span class="var">jet1_pt</span>, <span class="var">jet2_pt</span>, <span class="var">el_pt</span>, <span class="var">el_eta</span>]
+
+  - <span class="kw">Name</span><span class="op">:</span>      <span class="var">CF_Pass_Ne_Pass_Nj_Pass_j1pt_Pass_ept</span>
+    <span class="kw">Selection</span><span class="op">:</span> <span class="str">"nElectrons_tight_NOSYS == 1 &amp;&amp; nJets_good_NOSYS == 4 &amp;&amp; jet_pt_NOSYS[0]/1000. > 50 &amp;&amp; el_pt_NOSYS[0]/1000. > 40"</span>
+    <span class="kw">Variables</span><span class="op">:</span> [<span class="var">nElectrons</span>, <span class="var">nJets</span>, <span class="var">jet1_pt</span>, <span class="var">jet2_pt</span>, <span class="var">el_pt</span>, <span class="var">el_eta</span>]
+</code></pre>
+
+    <hr class="divider">
+
+    <!-- ──────────────────────────────── OUTPUT -->
+    <h2 id="output">Lendo o output ROOT</h2>
+    <p>
+      Após rodar o FastFrames, o arquivo <code>output_cutflow/histograms.root</code> conterá
+      uma pasta por região. Para visualizar o cutflow no ROOT interativo:
+    </p>
+
+<pre><code><span class="cmt">// No ROOT prompt ou em um macro</span>
+TFile <span class="op">*</span>f <span class="op">=</span> TFile<span class="op">::</span>Open(<span class="str">"output_cutflow/histograms.root"</span>);
+f<span class="op">-></span>ls();
+
+<span class="cmt">// Conta total de eventos ponderados em cada região</span>
+<span class="kw">auto</span> getYield <span class="op">=</span> [<span class="op">&amp;</span>](TString region, TString var) {
+  TH1D <span class="op">*</span>h <span class="op">=</span> (<span class="kw">TH1D</span><span class="op">*</span>) f<span class="op">-></span>Get(region <span class="op">+</span> <span class="str">"/"</span> <span class="op">+</span> var <span class="op">+</span> <span class="str">"_ttbar_nominal"</span>);
+  <span class="kw">return</span> h ? h<span class="op">-></span>Integral() : <span class="num">0.</span>;
+};
+
+cout <span class="op"><<</span> <span class="str">"Pass_Ne       : "</span> <span class="op"><<</span> getYield(<span class="str">"CF_Pass_Ne"</span>,                              <span class="str">"nElectrons"</span>) <span class="op"><<</span> endl;
+cout <span class="op"><<</span> <span class="str">"Pass_Ne+Nj    : "</span> <span class="op"><<</span> getYield(<span class="str">"CF_Pass_Ne_Pass_Nj"</span>,                      <span class="str">"nElectrons"</span>) <span class="op"><<</span> endl;
+cout <span class="op"><<</span> <span class="str">"Pass_Ne+Nj+j1 : "</span> <span class="op"><<</span> getYield(<span class="str">"CF_Pass_Ne_Pass_Nj_Pass_j1pt"</span>,           <span class="str">"nElectrons"</span>) <span class="op"><<</span> endl;
+cout <span class="op"><<</span> <span class="str">"Pass_all      : "</span> <span class="op"><<</span> getYield(<span class="str">"CF_Pass_Ne_Pass_Nj_Pass_j1pt_Pass_ept"</span>, <span class="str">"nElectrons"</span>) <span class="op"><<</span> endl;
+</code></pre>
+
+    <h3>Estrutura de pastas no ROOT file</h3>
+<pre><code>histograms.root
+├── CF_Pass_Ne/
+│   ├── nElectrons_ttbar_nominal
+│   ├── nJets_ttbar_nominal
+│   ├── el_pt_ttbar_nominal
+│   └── el_eta_ttbar_nominal
+├── CF_Pass_Ne_Pass_Nj/
+│   └── ...
+├── CF_Pass_Ne_Pass_Nj_Pass_j1pt/
+│   └── ...
+└── CF_Pass_Ne_Pass_Nj_Pass_j1pt_Pass_ept/
+    └── ...
+</code></pre>
+
+    <hr class="divider">
+
+    <!-- ──────────────────────────────── TIPS -->
+    <h2 id="tips">Dicas práticas</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>Rode com <code>NominalOnly: true</code> primeiro</h3>
+          <p>
+            Cutflows geralmente são feitos sem sistemáticos. Definir <code>NominalOnly: true</code>
+            no bloco <code>General</code> reduz drasticamente o tempo de processamento e é suficiente
+            para validar a seleção de eventos.
+          </p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>Guarde a região de seleção final com outro nome</h3>
+          <p>
+            A última região do cutflow (<code>CF_Pass_Ne_Pass_Nj_Pass_j1pt_Pass_ept</code>) pode
+            ser simplesmente renomeada para <code>ejets_signal</code> quando a seleção estiver
+            finalizada — evita manter dois blocos idênticos no config.
+          </p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>Use <code>NOSYS</code> nas seleções</h3>
+          <p>
+            A string <code>_NOSYS</code> no nome da branch refere-se ao valor nominal, sem variação
+            sistemática aplicada. Sempre use isso nas strings de <code>Selection</code> para
+            garantir que o corte seja aplicado ao valor nominal, mesmo quando rodar com sistemáticos.
+          </p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h3>Adicione uma região "all events" como ponto zero</h3>
+          <p>
+            Para ter a contagem total antes de qualquer corte, crie uma região sem seleção:
+          </p>
+<pre><code>  - <span class="kw">Name</span><span class="op">:</span>      <span class="var">CF_AllEvents</span>
+    <span class="kw">Selection</span><span class="op">:</span> <span class="str">"1"</span>   <span class="cmt"># sem corte</span>
+    <span class="kw">Variables</span><span class="op">:</span> [<span class="var">nElectrons</span>, <span class="var">nJets</span>]
+</code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h3>Múltiplos cutflows no mesmo config</h3>
+          <p>
+            Nada impede de ter cutflows paralelos para outros canais (μ+jets, dilepton) no mesmo
+            arquivo YAML — basta adicionar mais regiões com prefixos distintos,
+            como <code>CF_mu_Pass_Ne</code>, <code>CF_ll_Pass_mll</code>, etc.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ──────────────────────────────── TABELA -->
+    <h2 id="table">Referência de parâmetros YAML</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Campo</th>
+          <th>Bloco</th>
+          <th>Tipo</th>
+          <th>Descrição</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Name</code></td>
+          <td>Region</td>
+          <td>string</td>
+          <td>Identificador único da região. Aparece como pasta no ROOT file.</td>
+        </tr>
+        <tr>
+          <td><code>Selection</code></td>
+          <td>Region</td>
+          <td>string (expressão C++)</td>
+          <td>Filtro booleano aplicado evento a evento via RDataFrame. Suporta operadores <code>&amp;&amp;</code>, <code>||</code>, comparações, índices de vetores.</td>
+        </tr>
+        <tr>
+          <td><code>Variables</code></td>
+          <td>Region</td>
+          <td>lista de strings</td>
+          <td>Nomes das variáveis (definidas no bloco <code>Variables</code> global) a serem histogramadas nesta região.</td>
+        </tr>
+        <tr>
+          <td><code>Definition</code></td>
+          <td>Variable</td>
+          <td>string (expressão C++)</td>
+          <td>Expressão ROOT que calcula a variável. Pode referenciar branches do TTree diretamente.</td>
+        </tr>
+        <tr>
+          <td><code>Binning</code></td>
+          <td>Variable</td>
+          <td>lista ou mapa</td>
+          <td>Define os bins do histograma. Pode ser lista de bordas (<code>Edges</code>) ou vetor uniforme <code>[min, max, n]</code>.</td>
+        </tr>
+        <tr>
+          <td><code>NominalOnly</code></td>
+          <td>General</td>
+          <td>bool</td>
+          <td>Se <code>true</code>, processa somente a variação nominal — recomendado para cutflows rápidos.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <footer>
+      Baseado na <a href="https://atlas-project-topreconstruction.web.cern.ch/fastframesdocumentation/latest/tutorial/" target="_blank">documentação oficial do FastFrames</a> — ATLAS Top Reconstruction Group.
+    </footer>
+  </main>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,217 @@
+general:
+  debug_level: DEBUG # Logger level
+  input_filelist_path: "../metadata/filelist.txt" # Path to the metadata relative to fastframes directory
+  input_sumweights_path: "../metadata/sum_of_weights.txt" # Path to the metadata relative to fastframes directory
+  output_path_histograms: "../output_histograms_electrons_muons_loose/" # Path to the output histograms relative to fastframes directory
+  output_path_ntuples: "../output_ntuples/" # Path to the output ntuples relative to fastframes directory
+  default_sumweights: "NOSYS" # Default sum of weights for the samples. This is used to calculate the scaling to the luminosity.
+  default_event_weights: "weight_mc_NOSYS  * weight_mc_fcal_2lep * weight_leptonSF_loose_NOSYS" # Default event weights for the samples. This is used to calculate the scaling to the luminosity.
+  default_reco_tree_name: "reco" # Name of the reco tree in the input files.
+  xsection_files: # Location of the cross-section, k-factor, filter-efficiency medatada split per campaign.
+    - files: ["/home/danbiajujumiguel/workspace/FFAnalysis/PMGxsecDB_mc23.txt"]
+      campaigns: ["mc23d"]
+  luminosity: # Luminosity for the campaigns
+    mc23d: 0.00163 #
+  automatic_systematics: False
+  nominal_only: True # Run with/without systematics.
+  config_define_after_custom_class: True
+  define_custom_columns: # You can define new variables here. Use valid C++ syntax.
+    - name: "nJetsR4_NOSYS"
+      definition: "jetR4_pt_NOSYS[jetR4_pt_NOSYS >= 25000 && jetR4_select_looseHI_NOSYS==true].size()"
+    - name: "jetR4_sort_idx_NOSYS"
+      definition: "ROOT::VecOps::Argsort(-jetR4_pt_NOSYS[jetR4_select_looseHI_NOSYS])"
+    - name: "jetR4_pt_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(jetR4_pt_NOSYS[jetR4_select_looseHI_NOSYS], jetR4_sort_idx_NOSYS)"
+    - name: "jetR4_eta_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(jetR4_eta[jetR4_select_looseHI_NOSYS], jetR4_sort_idx_NOSYS)"
+    - name: "jetR4_phi_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(jetR4_phi[jetR4_select_looseHI_NOSYS], jetR4_sort_idx_NOSYS)"
+    - name: "jetR4_e_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(jetR4_e_NOSYS[jetR4_select_looseHI_NOSYS], jetR4_sort_idx_NOSYS)"
+    - name: "jetR4_tlv0_NOSYS"
+      definition: "ROOT::Math::PtEtaPhiEVector(jetR4_pt_sorted_NOSYS[0], jetR4_eta_sorted_NOSYS[0], jetR4_phi_sorted_NOSYS[0], jetR4_e_sorted_NOSYS[0])"
+    - name: "jetR4_tlv1_NOSYS"
+      definition: "ROOT::Math::PtEtaPhiEVector(jetR4_pt_sorted_NOSYS[1], jetR4_eta_sorted_NOSYS[1], jetR4_phi_sorted_NOSYS[1], jetR4_e_sorted_NOSYS[1])"
+    - name: "nElectrons_NOSYS"
+      definition: "el_pt_NOSYS[el_pt_NOSYS >= 18000 && el_select_loose_NOSYS==true].size()"
+    - name: "el_sort_idx_NOSYS"
+      definition: "ROOT::VecOps::Argsort(-el_pt_NOSYS[el_select_loose_NOSYS])"
+    - name: "el_pt_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(el_pt_NOSYS[el_select_loose_NOSYS], el_sort_idx_NOSYS)"
+    - name: "el_eta_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(el_eta[el_select_loose_NOSYS], el_sort_idx_NOSYS)"
+    - name: "el_phi_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(el_phi[el_select_loose_NOSYS], el_sort_idx_NOSYS)"
+    - name: "el_e_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(el_e_NOSYS[el_select_loose_NOSYS], el_sort_idx_NOSYS)"
+    - name: "el_charge_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(el_charge[el_select_loose_NOSYS], el_sort_idx_NOSYS)"
+    - name: "el_pt2cone20_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(el_pt2cone20[el_select_loose_NOSYS], el_sort_idx_NOSYS)"
+    - name: "el_topoetcone20_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(el_topoetcone20[el_select_loose_NOSYS], el_sort_idx_NOSYS)"
+    - name: "el0_tlv_NOSYS"
+      definition: "ROOT::Math::PtEtaPhiEVector(el_pt_sorted_NOSYS[0], el_eta_sorted_NOSYS[0], el_phi_sorted_NOSYS[0], el_e_sorted_NOSYS[0])"
+    - name: "el1_tlv_NOSYS"
+      definition: "ROOT::Math::PtEtaPhiEVector(el_pt_sorted_NOSYS[1], el_eta_sorted_NOSYS[1], el_phi_sorted_NOSYS[1], el_e_sorted_NOSYS[1])"
+    - name: "nMuons_NOSYS"
+      definition: "mu_pt_NOSYS[mu_pt_NOSYS >= 15000 && mu_select_loose_NOSYS==true].size()"
+    - name: "mu_sort_idx_NOSYS"
+      definition: "ROOT::VecOps::Argsort(-mu_pt_NOSYS[mu_select_loose_NOSYS])"
+    - name: "mu_pt_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(mu_pt_NOSYS[mu_select_loose_NOSYS], mu_sort_idx_NOSYS)"
+    - name: "mu_eta_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(mu_eta[mu_select_loose_NOSYS], mu_sort_idx_NOSYS)"
+    - name: "mu_phi_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(mu_phi[mu_select_loose_NOSYS], mu_sort_idx_NOSYS)"
+    - name: "mu_e_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(mu_e_NOSYS[mu_select_loose_NOSYS], mu_sort_idx_NOSYS)"
+    - name: "mu_charge_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(mu_charge[mu_select_loose_NOSYS], mu_sort_idx_NOSYS)"
+    - name: "mu_pt2cone20_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(mu_pt2cone20[mu_select_loose_NOSYS], mu_sort_idx_NOSYS)"
+    - name: "mu_topoetcone20_sorted_NOSYS"
+      definition: "ROOT::VecOps::Take(mu_topoetcone20[mu_select_loose_NOSYS], mu_sort_idx_NOSYS)"
+    - name: "mu0_tlv_NOSYS"
+      definition: "ROOT::Math::PtEtaPhiEVector(mu_pt_sorted_NOSYS[0], mu_eta_sorted_NOSYS[0], mu_phi_sorted_NOSYS[0], mu_e_sorted_NOSYS[0])"
+    - name: "mu1_tlv_NOSYS"
+      definition: "ROOT::Math::PtEtaPhiEVector(mu_pt_sorted_NOSYS[1], mu_eta_sorted_NOSYS[1], mu_phi_sorted_NOSYS[1], mu_e_sorted_NOSYS[1])"
+
+  # create_tlorentz_vectors_for: ["el"] # desabilitado: el_tlv_NOSYS definido manualmente acima
+  use_rvec: False # Use ROOT::RVec instead of std::vector.
+  number_of_cpus: 4 # CPU cores to use for the analysis.
+  use_region_subfolders: False # Save the histograms in subfolders per region.  it was true
+
+regions: # All the regions (defined by a selection criteria) to be used in the analysis.
+  - name: all_loose_electron # This postfix will be appended to every variable.
+    selection: "pass_emu_NOSYS == 1" # Selection string, needs to be valid C++ syntax.
+    variables:
+      &common_electrons # Here you list the variables. Note the usage of the anchor (&). This allows you to reuse the same variables in other regions.
+      - name: el0_pt # Name of the variable. This will result in 'el_pt_all_loose_elon'.
+        title: "electron p_{T}(0) [GeV]; p_{T} [MeV]; Events"
+        definition: "el0_tlv_NOSYS.Pt()"
+        binning:
+          min: 0
+          max: 100000
+          number_of_bins: 20
+      - name: el0_eta
+        title: "Electron eta(0); el_eta; Events"
+        definition: "el0_tlv_NOSYS.Eta()"
+        binning:
+          min: -3.0
+          max: 3.0
+          number_of_bins: 60
+      - name: "n_electrons"
+        type: "unsigned long"
+        title: "Number of Electrons ; nElectrons ; Events"
+        definition: "nElectrons_NOSYS"
+        binning:
+          min: -0.5
+          max: 7.5
+          number_of_bins: 8
+  - name: all_loose_muons # This postfix will be appended to every variable.
+    selection: "pass_emu_NOSYS == 1" # Selection string, needs to be valid C++ syntax.
+    variables:
+      &common_muons # Here you list the variables. Note the usage of the anchor (&). This allows you to reuse the same variables in other regions.
+      - name: mu0_pt # Name of the variable. This will result in 'mu_pt_all_loose_muon'.
+        title: "Muon p_{T}(0) [GeV]; p_{T} [MeV]; Events"
+        definition: "mu0_tlv_NOSYS.Pt()"
+        binning:
+          min: 0
+          max: 100000
+          number_of_bins: 20
+      - name: mu0_eta
+        title: "Muon eta(0); mu_eta; Events"
+        definition: "mu0_tlv_NOSYS.Eta()"
+        binning:
+          min: -3.0
+          max: 3.0
+          number_of_bins: 60
+      - name: "n_muons"
+        type: "unsigned long"
+        title: "Number of Muons ; nMuons ; Events"
+        definition: "nMuons_NOSYS"
+        binning:
+          min: -0.5
+          max: 7.5
+          number_of_bins: 8
+  - name: all_composite_variables_loose # This postfix will be appended to every variable.
+    selection: "pass_emu_NOSYS == 1" # Selection string, needs to be valid C++ syntax.
+    variables:
+      &composite_variables # Here you list the variables. Note the usage of the anchor (&). This allows you to reuse the same variables in other regions.
+      - name: "ratio_pt2cone20_el0"
+        title: "p_{T}^{cone20}/p_{T}; p_{T}^{cone20}/p_{T}; Events"
+        definition: "el_pt2cone20_sorted_NOSYS[0]/el_pt_sorted_NOSYS[0]"
+        binning:
+          min: 0
+          max: 1
+          number_of_bins: 50
+      - name: "ratio_topoetcone20_el0"
+        title: "topoetcone20/p_{T}; topoetcone20/p_{T}; Events"
+        definition: "el_topoetcone20_sorted_NOSYS[0]/el_pt_sorted_NOSYS[0]"
+        binning:
+          min: 0
+          max: 1
+          number_of_bins: 50
+      - name: "ratio_pt2cone20_mu0"
+        title: "p_{T}^{cone20}/p_{T}; p_{T}^{cone20}/p_{T}; Events"
+        definition: "mu_pt2cone20_sorted_NOSYS[0]/mu_pt_sorted_NOSYS[0]"
+        binning:
+          min: 0
+          max: 1
+          number_of_bins: 50
+      - name: "ratio_topoetcone20_mu0"
+        title: "topoetcone20/p_{T}; topoetcone20/p_{T}; Events"
+        definition: "mu_topoetcone20_sorted_NOSYS[0]/mu_pt_sorted_NOSYS[0]"
+        binning:
+          min: 0
+          max: 1
+          number_of_bins: 50
+      - name: "sumET"
+        type: "float"
+        title: "FCAL sum ET; FCAL-SumET; Events"
+        definition: "fcal_sum_et"
+        binning:
+          min: 0
+          max: 6
+          number_of_bins: 60
+      - name: "m_el0_mu0"
+        title: "Invariant mass of leading electron and muon; m_{e#mu} [GeV]; Events"
+        definition: "(el0_tlv_NOSYS + mu0_tlv_NOSYS).M()/1000"
+        binning:
+          min: 0
+          max: 300
+          number_of_bins: 30
+
+  #include barrel region from electron in eta
+  - name: "TREXET_1EL1MU_CENTRAL_0_80_ISO"
+    selection: >-
+      fcal_sum_et > 0.063208 &&  pass_emu_NOSYS == 1 && el0_tlv_NOSYS.Pt() > 18000 && mu0_tlv_NOSYS.Pt() > 15000 &&
+      ((abs(el0_tlv_NOSYS.Eta()) < 1.37) || (abs(el0_tlv_NOSYS.Eta()) > 1.52 && abs(el0_tlv_NOSYS.Eta()) < 2.47)) && 
+      (abs(mu0_tlv_NOSYS.Eta())) < 2.5 && el_pt2cone20_sorted_NOSYS[0]/el0_tlv_NOSYS.Pt() < 0.16 && 
+      el_topoetcone20_sorted_NOSYS[0]/el0_tlv_NOSYS.Pt() < 0.22 && mu_pt2cone20_sorted_NOSYS[0]/mu0_tlv_NOSYS.Pt() < 0.32 && 
+      mu_topoetcone20_sorted_NOSYS[0]/mu0_tlv_NOSYS.Pt() < 0.50 && el_charge_sorted_NOSYS[0] * mu_charge_sorted_NOSYS[0] < 0 && 
+      nElectrons_NOSYS == 1 && nMuons_NOSYS == 1  && (nElectrons_NOSYS + nMuons_NOSYS) == 2 &&
+      jetR4_tlv0_NOSYS.Pt() >  35000 && jetR4_tlv1_NOSYS.Pt() > 35000 && nJetsR4_NOSYS >= 2 &&
+      (el0_tlv_NOSYS + mu0_tlv_NOSYS).M() > 30000
+    #el0_charge_sorted_NOSYS[0] * el1_charge_sorted_NOSYS[1] < 0      && nJetsR4_NOSYS == 0
+    variables: *composite_variables # Reuse the common variables defined above.
+
+ntuples: # Use this block to define the ntuples to be created.
+  regions: # Only events passing the selection of one of the regions will be saved in the ntuple.
+    - TREXET_1EL1MU_CENTRAL_0_80_ISO
+  #selection: "nJets_NOSYS == 3" # You can alternatively define a selection for the ntuples.
+  branches: # These branches will be saved in the ntuple.
+    - .*_pt_NOSYS # You can use regular expressions. This will select e, mu and jet pt.
+
+samples: # All the samples to be used in the analysis. mudo aqui depois para diff mu e electrons
+  - name: "data" # Name given to the sample.
+    dsids: [0] # For data, this is always 0.
+    campaigns: ["2024"] # The corresponding campaing or campaigns.
+    simulation_type: "data" # Type of simulation.
+
+  - name: "ttHijing" # Another sample.
+    dsids: [601589] # List of DSIDs for the sample.
+    campaigns: ["mc23d"]
+    simulation_type: "fullsim" # For MC samples we have a different simulation type.
+
